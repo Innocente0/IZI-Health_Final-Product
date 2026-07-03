@@ -1,0 +1,4 @@
+Model,Top-1 Accuracy (%),Top-3 Accuracy (%),Top-5 Accuracy (%),Average Response Time (ms),Final Score
+TF-IDF + Cosine,49.8,72.6,80.8,2.43,60.23
+CountVectorizer + Cosine,49.8,69.6,79.8,2.99,59.1
+Sentence-BERT,61.0,78.8,83.8,18.22,66.94

@@ -1,0 +1,1 @@
+{"scripts":{"dev":"nodemon src/server.js","start":"node src/server.js"},"dependencies":{"axios":"^1.18.1","bcryptjs":"latest","cors":"latest","dotenv":"latest","express":"latest","jsonwebtoken":"latest"},"devDependencies":{"nodemon":"latest"}}

@@ -1,0 +1,4 @@
+Metric,Accuracy (%)
+Top-1 Accuracy,8.0
+Top-3 Accuracy,13.0
+Top-5 Accuracy,16.2
