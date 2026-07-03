@@ -48,7 +48,6 @@ Video Demo: https://drive.google.com/drive/folders/1IZGKCo4Z1agbVpTTtLIb0hZtmbrU
 
 ## Project Structure
 
-```text
 izi-health-final/
 │
 ├── frontend/
