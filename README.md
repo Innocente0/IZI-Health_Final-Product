@@ -48,6 +48,7 @@ Video Demo: https://drive.google.com/drive/folders/1IZGKCo4Z1agbVpTTtLIb0hZtmbrU
 
 ## Project Structure
 
+```text
 izi-health-final/
 │
 ├── frontend/
@@ -86,7 +87,7 @@ izi-health-final/
 │   └── outputs/
 │
 └── README.md
-
+```
 ## Project Structure
 
 You need to run three terminal at the same time: 
