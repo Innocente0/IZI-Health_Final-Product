@@ -1066,13 +1066,16 @@ function Glucose({ user }) {
         bmi: form.bmi || calculateBMI(form.weight, form.height),
       };
 
-      const response = await fetch("http://localhost:4000/api/health-logs", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(logToSend),
-      });
+      const response = await fetch(
+  `${import.meta.env.VITE_API_URL}/api/health-logs`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(logToSend),
+  }
+);  // Added new line for deployment
 
       const savedFromBackend = await response.json();
       const engineered = buildEngineeredFeatures(logs, savedFromBackend);
@@ -2066,23 +2069,30 @@ function Admin() {
   );
 }
 
-function Chatbot({user}) {
+function Chatbot({ user }) {
   const [open, setOpen] = useState(false);
+
   const [messages, setMessages] = useState(
     get(KEY.chat, [
       {
         sender: "bot",
-        message: "Hello! 👋 I am your Health Navigator. How can I help you today?"
-      }
+        message:
+          "Hello! 👋 I am your Health Navigator. How can I help you today?",
+      },
     ])
   );
+
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const h = () => setOpen(true);
-    window.addEventListener("open-chat", h);
-    return () => window.removeEventListener("open-chat", h);
+    const handleOpenChat = () => setOpen(true);
+
+    window.addEventListener("open-chat", handleOpenChat);
+
+    return () => {
+      window.removeEventListener("open-chat", handleOpenChat);
+    };
   }, []);
 
   async function send() {
@@ -2092,7 +2102,10 @@ function Chatbot({user}) {
 
     const updatedMessages = [
       ...messages,
-      { sender: "user", message: userText }
+      {
+        sender: "user",
+        message: userText,
+      },
     ];
 
     setMessages(updatedMessages);
@@ -2101,15 +2114,22 @@ function Chatbot({user}) {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4000/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          question: userText
-        })
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: userText,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Chat request failed.");
+      }
 
       const data = await response.json();
 
@@ -2117,39 +2137,43 @@ function Chatbot({user}) {
         ...updatedMessages,
         {
           sender: "bot",
-          message: data.answer || "Sorry, I could not find a good answer.",
-          facilities: data.facilities || []
-        }
+          message:
+            data.answer || "Sorry, I could not find a good answer.",
+          facilities: data.facilities || [],
+        },
       ];
 
       setMessages(finalMessages);
       set(KEY.chat, finalMessages);
     } catch (error) {
+      console.error("Chatbot error:", error);
+
       const errorMessages = [
         ...updatedMessages,
         {
           sender: "bot",
-          message: "Sorry, the chatbot service is not available."
-        }
+          message:
+            "Sorry, the chatbot service is not available. Make sure the backend and ML service are running.",
+        },
       ];
 
       setMessages(errorMessages);
       set(KEY.chat, errorMessages);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   function clear() {
-    const m = [
+    const newMessages = [
       {
         sender: "bot",
-        message: "New conversation started. How can I help?"
-      }
+        message: "New conversation started. How can I help?",
+      },
     ];
 
-    setMessages(m);
-    set(KEY.chat, m);
+    setMessages(newMessages);
+    set(KEY.chat, newMessages);
   }
 
   return (
@@ -2160,56 +2184,87 @@ function Chatbot({user}) {
             <HeartPulse />
             <b>Health Navigator</b>
             <span>AI</span>
-            <button onClick={() => setOpen(false)}>
+
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+            >
               <X />
             </button>
           </div>
 
           <div className="chatBody">
-            {messages.map((m, i) => (
-              <div key={i} className={m.sender === "user" ? "bubble user" : "bubble"}>
-                <div>{m.message}</div>
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={
+                  message.sender === "user"
+                    ? "bubble user"
+                    : "bubble"
+                }
+              >
+                <div>{message.message}</div>
 
-                {m.facilities && m.facilities.length > 0 && (
-                  <div style={{ marginTop: "10px" }}>
-                    {m.facilities.map((f) => (
-                      <a
-                        key={f.id}
-                        href={`/facilities?q=${encodeURIComponent(f.name)}`}
-                        style={{
-                          display: "block",
-                          marginTop: "8px",
-                          padding: "8px",
-                          borderRadius: "10px",
-                          background: "#f1ecff",
-                          color: "#3b1978",
-                          textDecoration: "none",
-                          fontWeight: "600"
-                        }}
-                      >
-                        View {f.name}
-                      </a>
-                    ))}
-                  </div>
-                )}
+                {message.facilities &&
+                  message.facilities.length > 0 && (
+                    <div style={{ marginTop: "10px" }}>
+                      {message.facilities.map((facility) => (
+                        <a
+                          key={facility.id}
+                          href={`/facilities?q=${encodeURIComponent(
+                            facility.name
+                          )}`}
+                          style={{
+                            display: "block",
+                            marginTop: "8px",
+                            padding: "8px",
+                            borderRadius: "10px",
+                            background: "#f1ecff",
+                            color: "#3b1978",
+                            textDecoration: "none",
+                            fontWeight: "600",
+                          }}
+                        >
+                          View {facility.name}
+                        </a>
+                      ))}
+                    </div>
+                  )}
               </div>
             ))}
 
-            {loading && <div className="bubble">Thinking...</div>}
+            {loading && (
+              <div className="bubble">Thinking...</div>
+            )}
           </div>
 
           <div className="chatActions">
-            <button onClick={clear}>Clear history</button>
+            <button
+              type="button"
+              onClick={clear}
+            >
+              Clear history
+            </button>
           </div>
 
           <div className="chatInput">
             <input
               value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send()}
+              onChange={(event) => setText(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !loading) {
+                  send();
+                }
+              }}
               placeholder="Type your message..."
+              disabled={loading}
             />
-            <button onClick={send}>
+
+            <button
+              type="button"
+              onClick={send}
+              disabled={loading}
+            >
               <Send />
             </button>
           </div>
@@ -2220,10 +2275,17 @@ function Chatbot({user}) {
         </div>
       )}
 
-      <button className="chatBtn" onClick={() => setOpen(!open)}>
+      <button
+        type="button"
+        className="chatBtn"
+        onClick={() => setOpen(!open)}
+      >
         {open ? <X /> : <MessageCircle />}
       </button>
     </>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+
+createRoot(document.getElementById("root")).render(
+  <App />
+);
