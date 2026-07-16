@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 fastapi
 uvicorn
 pandas
@@ -5,6 +7,7 @@ scikit-learn
 joblib
 numpy
 python-multipart
-sentence-transformers
-torch==2.3.1+cpu
---extra-index-url https://download.pytorch.org/whl/cpu 
+
+torch==2.4.1+cpu
+transformers==4.46.3
+sentence-transformers==3.2.1
