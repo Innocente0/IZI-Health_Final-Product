@@ -8,21 +8,31 @@ from sentence_transformers import SentenceTransformer
 
 app = FastAPI(title="IZI Health ML Service")
 
-DIABETES_MODEL_PATH = os.path.join("models", "diabetes_model.pkl")
-MEDQUAD_CSV_PATH = os.path.join("data", "medquad.csv")
+@app.on_event("startup")
+def load_sbert_model():
+    global sbert_model, medquad_embeddings
+
+    print("Loading Sentence-BERT model...")
+
+    sbert_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    print("Creating MedQuAD embeddings...")
+
+    medquad_embeddings = sbert_model.encode(
+        medquad_df["question"].astype(str).tolist(),
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+    )
+
+    print("ML models loaded successfully!")
 
 diabetes_model = joblib.load(DIABETES_MODEL_PATH)
 
 medquad_df = pd.read_csv(MEDQUAD_CSV_PATH)
 medquad_df = medquad_df.dropna(subset=["question", "answer"]).reset_index(drop=True)
 
-sbert_model = SentenceTransformer("all-MiniLM-L6-v2")
-
-medquad_embeddings = sbert_model.encode(
-    medquad_df["question"].astype(str).tolist(),
-    convert_to_numpy=True,
-    normalize_embeddings=True,
-)
+sbert_model = None
+medquad_embeddings = None
 
 
 class DiabetesInput(BaseModel):
