@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  password    String
+  role        String       @default("USER")
+  createdAt   DateTime     @default(now())
+
+  healthLogs HealthLog[]
+  medications Medication[]
+  reminders  Reminder[]
+}
+
+model HealthLog {
+  id                Int      @id @default(autoincrement())
+  gender            String?
+  age               Int?
+  hypertension      Int?
+  heartDisease      Int?
+  smokingHistory    String?
+  bmi               Float?
+  hba1cLevel        Float?
+  bloodGlucoseLevel Float?
+
+  prediction        Int?
+  probability       Float?
+  riskLevel         String?
+  recommendation    String?
+
+  createdAt         DateTime @default(now())
+
+  userId            Int?
+  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Medication {
+  id        Int      @id @default(autoincrement())
+  name      String
+  dosage    String?
+  frequency String?
+  startDate DateTime?
+  endDate   DateTime?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Reminder {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  reminderAt  DateTime?
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  userId      Int?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
