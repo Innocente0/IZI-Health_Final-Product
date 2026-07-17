@@ -1,13 +1,18 @@
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
+const axios = require("axios");
 require("dotenv").config();
 
 const chatRoutes = require("./routes/chatRoutes");
 const facilities = require("./seedFacilities");
 
 const app = express();
+
 const PORT = process.env.PORT || 4000;
+
+const ML_SERVICE_URL =
+  process.env.ML_SERVICE_URL || "http://localhost:8000";
 
 app.use(cors());
 app.use(express.json());
@@ -27,31 +32,50 @@ let reminders = [];
 let medications = [];
 
 app.get("/", (req, res) => {
-  res.json({ message: "IZI Health API is running" });
+  res.json({
+    message: "IZI Health API is running",
+  });
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    mlServiceUrl: ML_SERVICE_URL,
+  });
 });
 
 app.post("/api/auth/register", (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
-    return res.status(400).json({ message: "All fields are required." });
+    return res.status(400).json({
+      message: "All fields are required.",
+    });
   }
 
-  if (users.find((u) => u.email === email)) {
-    return res.status(409).json({ message: "Email already exists." });
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (
+    users.find(
+      (user) => user.email.toLowerCase() === normalizedEmail
+    )
+  ) {
+    return res.status(409).json({
+      message: "Email already exists.",
+    });
   }
 
   const user = {
-    id: users.length + 1,
-    name,
-    email,
+    id: Date.now(),
+    name: name.trim(),
+    email: normalizedEmail,
     password,
     role: "USER",
   };
 
   users.push(user);
 
-  res.json({
+  return res.status(201).json({
     token: "demo-token",
     user,
   });
@@ -60,37 +84,46 @@ app.post("/api/auth/register", (req, res) => {
 app.post("/api/auth/login", (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({
+      message: "Email and password are required.",
+    });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
   const user = users.find(
-    (u) => u.email === email && u.password === password
+    (existingUser) =>
+      existingUser.email.toLowerCase() === normalizedEmail &&
+      existingUser.password === password
   );
 
   if (!user) {
-    return res.status(401).json({ message: "Invalid email or password." });
+    return res.status(401).json({
+      message: "Invalid email or password.",
+    });
   }
 
-  res.json({
+  return res.json({
     token: "demo-token",
     user,
   });
 });
 
 app.get("/api/facilities", (req, res) => {
-  const q = (req.query.q || "").toLowerCase();
+  const q = String(req.query.q || "").toLowerCase();
 
-  const results = facilities.filter((f) => {
-    const searchable = (
-      f.name +
-      " " +
-      f.type +
-      " " +
-      f.district +
-      " " +
-      f.services.join(" ") +
-      " " +
-      f.specialists.join(" ") +
-      " " +
-      f.insurance.join(" ")
-    ).toLowerCase();
+  const results = facilities.filter((facility) => {
+    const searchable = [
+      facility.name,
+      facility.type,
+      facility.district,
+      ...(facility.services || []),
+      ...(facility.specialists || []),
+      ...(facility.insurance || []),
+    ]
+      .join(" ")
+      .toLowerCase();
 
     return searchable.includes(q);
   });
@@ -99,8 +132,17 @@ app.get("/api/facilities", (req, res) => {
 });
 
 app.get("/api/facilities/:id", (req, res) => {
-  const facility = facilities.find((f) => f.id == req.params.id);
-  res.json(facility);
+  const facility = facilities.find(
+    (item) => String(item.id) === String(req.params.id)
+  );
+
+  if (!facility) {
+    return res.status(404).json({
+      message: "Facility not found.",
+    });
+  }
+
+  return res.json(facility);
 });
 
 app.get("/api/users", (req, res) => {
@@ -114,27 +156,47 @@ app.post("/api/health-logs", async (req, res) => {
       ...req.body,
     };
 
-    let prediction = null;
+    let prediction;
 
     try {
-      const axios = require("axios");
-
-      const mlResponse = await axios.post("http://localhost:8000/predict-diabetes", {
-        gender: req.body.gender || "Female",
-        age: Number(req.body.age || 35),
-        hypertension: Number(req.body.hypertension || 0),
-        heart_disease: Number(req.body.heart_disease || 0),
-        smoking_history: req.body.smoking_history || "never",
-        bmi: Number(req.body.bmi || 25),
-        HbA1c_level: Number(req.body.HbA1c_level || 5.5),
-        blood_glucose_level: Number(req.body.glucose || req.body.blood_glucose_level || 100),
-      });
+      const mlResponse = await axios.post(
+        `${ML_SERVICE_URL}/predict-diabetes`,
+        {
+          gender: req.body.gender || "Female",
+          age: Number(req.body.age || 35),
+          hypertension: Number(req.body.hypertension || 0),
+          heart_disease: Number(req.body.heart_disease || 0),
+          smoking_history:
+            req.body.smoking_history || "never",
+          bmi: Number(req.body.bmi || 25),
+          HbA1c_level: Number(req.body.HbA1c_level || 5.5),
+          blood_glucose_level: Number(
+            req.body.glucose ||
+              req.body.blood_glucose_level ||
+              100
+          ),
+        },
+        {
+          timeout: 60000,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       prediction = mlResponse.data;
     } catch (mlError) {
+      console.error(
+        "Diabetes prediction failed:",
+        mlError.response?.data || mlError.message
+      );
+
       prediction = {
+        prediction: null,
+        probability: null,
         riskLevel: "Prediction unavailable",
-        recommendation: "ML service is not available right now.",
+        recommendation:
+          "The ML service is temporarily unavailable. Your health log was still saved.",
       };
     }
 
@@ -145,9 +207,11 @@ app.post("/api/health-logs", async (req, res) => {
 
     logs.unshift(savedLog);
 
-    res.json(savedLog);
+    return res.status(201).json(savedLog);
   } catch (error) {
-    res.status(500).json({
+    console.error("Health log error:", error);
+
+    return res.status(500).json({
       message: "Could not save health log.",
     });
   }
@@ -164,7 +228,8 @@ app.post("/api/medications", (req, res) => {
   };
 
   medications.unshift(medication);
-  res.json(medication);
+
+  res.status(201).json(medication);
 });
 
 app.get("/api/medications", (req, res) => {
@@ -178,7 +243,8 @@ app.post("/api/reminders", (req, res) => {
   };
 
   reminders.unshift(reminder);
-  res.json(reminder);
+
+  res.status(201).json(reminder);
 });
 
 app.get("/api/reminders", (req, res) => {
@@ -187,11 +253,15 @@ app.get("/api/reminders", (req, res) => {
 
 app.use("/api/chat", chatRoutes);
 
-const server = http.createServer(app);
-
-server.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+app.use((req, res) => {
+  res.status(404).json({
+    message: "API route not found.",
+  });
 });
 
-// Keeps backend process alive for nodemon on your setup
-setInterval(() => {}, 1000);
+const server = http.createServer(app);
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`IZI Health backend running on port ${PORT}`);
+  console.log(`ML service URL: ${ML_SERVICE_URL}`);
+});

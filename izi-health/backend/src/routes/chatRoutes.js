@@ -3,7 +3,8 @@ const axios = require("axios");
 const facilities = require("../seedFacilities");
 
 const router = express.Router();
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
+const ML_SERVICE_URL =
+  process.env.ML_SERVICE_URL || "https://izi-health-ml.onrender.com";
 
 const typoWords = {
   diabets: "diabetes",
