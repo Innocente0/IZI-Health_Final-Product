@@ -1,9 +1,11 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const axios = require("axios");
-require("dotenv").config();
 
+const prisma = require("./lib/prisma");
 const chatRoutes = require("./routes/chatRoutes");
 const facilities = require("./seedFacilities");
 
@@ -16,20 +18,6 @@ const ML_SERVICE_URL =
 
 app.use(cors());
 app.use(express.json());
-
-let users = [
-  {
-    id: 1,
-    name: "Admin",
-    email: "admin@izihealth.rw",
-    password: "admin123",
-    role: "ADMIN",
-  },
-];
-
-let logs = [];
-let reminders = [];
-let medications = [];
 
 app.get("/", (req, res) => {
   res.json({
@@ -44,70 +32,87 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.post("/api/auth/register", (req, res) => {
-  const { name, email, password } = req.body;
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
 
-  if (!name || !email || !password) {
-    return res.status(400).json({
-      message: "All fields are required.",
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "All fields are required.",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: normalizedEmail,
+      },
+    });
+
+    if (existingUser) {
+      return res.status(409).json({
+        message: "Email already exists.",
+      });
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        name: name.trim(),
+        email: normalizedEmail,
+        password,
+        role: "USER",
+      },
+    });
+
+    return res.status(201).json({
+      token: "demo-token",
+      user,
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+
+    return res.status(500).json({
+      message: "Could not register user.",
     });
   }
-
-  const normalizedEmail = email.trim().toLowerCase();
-
-  if (
-    users.find(
-      (user) => user.email.toLowerCase() === normalizedEmail
-    )
-  ) {
-    return res.status(409).json({
-      message: "Email already exists.",
-    });
-  }
-
-  const user = {
-    id: Date.now(),
-    name: name.trim(),
-    email: normalizedEmail,
-    password,
-    role: "USER",
-  };
-
-  users.push(user);
-
-  return res.status(201).json({
-    token: "demo-token",
-    user,
-  });
 });
 
-app.post("/api/auth/login", (req, res) => {
-  const { email, password } = req.body;
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({
-      message: "Email and password are required.",
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required.",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email: normalizedEmail,
+      },
+    });
+
+    if (!user || user.password !== password) {
+      return res.status(401).json({
+        message: "Invalid email or password.",
+      });
+    }
+
+    return res.json({
+      token: "demo-token",
+      user,
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+
+    return res.status(500).json({
+      message: "Could not log in.",
     });
   }
-
-  const normalizedEmail = email.trim().toLowerCase();
-
-  const user = users.find(
-    (existingUser) =>
-      existingUser.email.toLowerCase() === normalizedEmail &&
-      existingUser.password === password
-  );
-
-  if (!user) {
-    return res.status(401).json({
-      message: "Invalid email or password.",
-    });
-  }
-
-  return res.json({
-    token: "demo-token",
-    user,
-  });
 });
 
 app.get("/api/facilities", (req, res) => {
@@ -145,16 +150,26 @@ app.get("/api/facilities/:id", (req, res) => {
   return res.json(facility);
 });
 
-app.get("/api/users", (req, res) => {
-  res.json(users);
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.json(users);
+  } catch (error) {
+    console.error("Get users error:", error);
+
+    return res.status(500).json({
+      message: "Could not retrieve users.",
+    });
+  }
 });
 
 app.post("/api/health-logs", async (req, res) => {
   try {
-    const log = {
-      id: Date.now(),
-      ...req.body,
-    };
 
     let prediction;
 
@@ -200,14 +215,58 @@ app.post("/api/health-logs", async (req, res) => {
       };
     }
 
-    const savedLog = {
-      ...log,
-      prediction,
-    };
+    const savedLog = await prisma.healthLog.create({
+  data: {
+    gender: req.body.gender || null,
+    age: req.body.age ? Number(req.body.age) : null,
+    hypertension:
+      req.body.hypertension !== undefined
+        ? Number(req.body.hypertension)
+        : null,
+    heartDisease:
+      req.body.heart_disease !== undefined
+        ? Number(req.body.heart_disease)
+        : null,
+    smokingHistory: req.body.smoking_history || null,
+    bmi: req.body.bmi ? Number(req.body.bmi) : null,
+    hba1cLevel: req.body.HbA1c_level
+      ? Number(req.body.HbA1c_level)
+      : null,
+    bloodGlucoseLevel:
+      req.body.glucose || req.body.blood_glucose_level
+        ? Number(
+            req.body.glucose ||
+              req.body.blood_glucose_level
+          )
+        : null,
 
-    logs.unshift(savedLog);
+    prediction:
+      prediction?.prediction !== undefined &&
+      prediction?.prediction !== null
+        ? Number(prediction.prediction)
+        : null,
 
-    return res.status(201).json(savedLog);
+    probability:
+      prediction?.probability !== undefined &&
+      prediction?.probability !== null
+        ? Number(prediction.probability)
+        : null,
+
+    riskLevel:
+      prediction?.riskLevel ||
+      prediction?.risk_level ||
+      null,
+
+    recommendation:
+      prediction?.recommendation || null,
+
+    userId: req.body.userId
+      ? Number(req.body.userId)
+      : null,
+  },
+});
+
+return res.status(201).json(savedLog);    //Added this line to return the saved log with prediction details
   } catch (error) {
     console.error("Health log error:", error);
 
@@ -217,41 +276,188 @@ app.post("/api/health-logs", async (req, res) => {
   }
 });
 
-app.get("/api/health-logs", (req, res) => {
-  res.json(logs);
+app.get("/api/health-logs", async (req, res) => {
+  try {
+    const where = req.query.userId
+      ? {
+          userId: Number(req.query.userId),
+        }
+      : {};
+
+    const logs = await prisma.healthLog.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.json(logs);
+  } catch (error) {
+    console.error("Get health logs error:", error);
+
+    return res.status(500).json({
+      message: "Could not retrieve health logs.",
+    });
+  }
 });
 
-app.post("/api/medications", (req, res) => {
-  const medication = {
-    id: Date.now(),
-    ...req.body,
-  };
+app.post("/api/medications", async (req, res) => {
+  try {
+    const {
+      name,
+      dosage,
+      frequency,
+      startDate,
+      endDate,
+      notes,
+      userId,
+    } = req.body;
 
-  medications.unshift(medication);
+    if (!name) {
+      return res.status(400).json({
+        message: "Medication name is required.",
+      });
+    }
 
-  res.status(201).json(medication);
+    const medication = await prisma.medication.create({
+      data: {
+        name: name.trim(),
+        dosage: dosage || null,
+        frequency: frequency || null,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        notes: notes || null,
+        userId: userId ? Number(userId) : null,
+      },
+    });
+
+    return res.status(201).json(medication);
+  } catch (error) {
+    console.error("Create medication error:", error);
+
+    return res.status(500).json({
+      message: "Could not save medication.",
+      error: error.message,
+    });
+  }
 });
 
-app.get("/api/medications", (req, res) => {
-  res.json(medications);
+app.get("/api/medications", async (req, res) => {
+  try {
+    const where = req.query.userId
+      ? {
+          userId: Number(req.query.userId),
+        }
+      : {};
+
+    const medications = await prisma.medication.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.json(medications);
+  } catch (error) {
+    console.error("Get medications error:", error);
+
+    return res.status(500).json({
+      message: "Could not retrieve medications.",
+      error: error.message,
+    });
+  }
 });
 
-app.post("/api/reminders", (req, res) => {
-  const reminder = {
-    id: Date.now(),
-    ...req.body,
-  };
+app.post("/api/reminders", async (req, res) => {
+  try {
+    const {
+      title,
+      description,
+      reminderDate,
+      completed,
+      userId,
+    } = req.body;
 
-  reminders.unshift(reminder);
+    if (!title) {
+      return res.status(400).json({
+        message: "Reminder title is required.",
+      });
+    }
 
-  res.status(201).json(reminder);
+    if (!reminderDate) {
+      return res.status(400).json({
+        message: "Reminder date is required.",
+      });
+    }
+
+    const reminder = await prisma.reminder.create({
+      data: {
+        title: title.trim(),
+        description: description || null,
+        reminderDate: new Date(reminderDate),
+        completed:
+          completed !== undefined ? Boolean(completed) : false,
+        userId: userId ? Number(userId) : null,
+      },
+    });
+
+    return res.status(201).json(reminder);
+  } catch (error) {
+    console.error("Create reminder error:", error);
+
+    return res.status(500).json({
+      message: "Could not save reminder.",
+      error: error.message,
+    });
+  }
 });
 
-app.get("/api/reminders", (req, res) => {
-  res.json(reminders);
+app.get("/api/reminders", async (req, res) => {
+  try {
+    const where = req.query.userId
+      ? {
+          userId: Number(req.query.userId),
+        }
+      : {};
+
+    const reminders = await prisma.reminder.findMany({
+      where,
+      orderBy: {
+        reminderDate: "asc",
+      },
+    });
+
+    return res.json(reminders);
+  } catch (error) {
+    console.error("Get reminders error:", error);
+
+    return res.status(500).json({
+      message: "Could not retrieve reminders.",
+      error: error.message,
+    });
+  }
 });
 
 app.use("/api/chat", chatRoutes);
+
+app.get("/api/db-health", async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+
+    return res.status(200).json({
+      status: "healthy",
+      database: "connected",
+    });
+  } catch (error) {
+    console.error("Database health check failed:", error);
+
+    return res.status(500).json({
+      status: "unhealthy",
+      database: "disconnected",
+      error: error.message,
+    });
+  }
+});
 
 app.use((req, res) => {
   res.status(404).json({
