@@ -1,5 +1,7 @@
 import React,{useEffect,useMemo,useState} from 'react';import{createRoot}from'react-dom/client';import{BrowserRouter,Routes,Route,Navigate,Link,useNavigate,useLocation}from'react-router-dom';import{Search,MessageCircle,HeartPulse,Shield,Building2,User,Lock,LogOut,Calendar,Clock,Droplet,Pill,Bell,AlertTriangle,BookOpen,Settings,Home as HomeIcon,Users,Activity,Plus,Trash2,X,Send,ChevronRight,ChevronLeft,Stethoscope,MapPin,Phone,Mail,Globe2,BarChart3}from'lucide-react';import'./styles.css';
 const KEY={user:'izi_user',users:'izi_users',logs:'izi_logs',meds:'izi_meds',reminders:'izi_reminders',chat:'izi_chat',settings:'izi_settings'};
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const facilities = [
   {
@@ -410,45 +412,71 @@ function About(){return <main className="page"><h1>About IZI Health</h1><p class
 
 function Login({ onLogin }) {
   const nav = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
+
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
+    setErr("");
 
-    const defaultAdmin = {
-      name: "Admin",
-      email: "admin@izihealth.rw",
-      password: "admin123",
-      role: "ADMIN",
-    };
-
-    const users = get(KEY.users, []);
-
-    const allUsers = [defaultAdmin, ...users];
-
-    const u = allUsers.find(
-      (x) =>
-        x.email.toLowerCase() === form.email.toLowerCase() &&
-        x.password === form.password
-    );
-
-    if (!u) {
-      return setErr("Invalid email or password.");
+    if (!form.email || !form.password) {
+      return setErr("Email and password are required.");
     }
 
-    onLogin(u);
-    nav(u.role === "ADMIN" ? "/admin" : "/ncd");
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed.");
+      }
+
+      onLogin(data.user);
+
+      nav(data.user.role === "ADMIN" ? "/admin" : "/ncd");
+    } catch (error) {
+      console.error("Login error:", error);
+      setErr(error.message || "Could not log in.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <Auth title="Welcome back" subtitle="Login to access facilities and NCD support">
+    <Auth
+      title="Welcome back"
+      subtitle="Login to access facilities and NCD support"
+    >
       <form onSubmit={submit} className="form">
         <input
           className="input"
           placeholder="Email"
+          type="email"
           value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              email: e.target.value,
+            })
+          }
         />
 
         <input
@@ -456,12 +484,23 @@ function Login({ onLogin }) {
           placeholder="Password"
           type="password"
           value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              password: e.target.value,
+            })
+          }
         />
 
         {err && <p className="error">{err}</p>}
 
-        <button className="primary full">Login</button>
+        <button
+          className="primary full"
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? "Logging in..." : "Login"}
+        </button>
 
         <p>
           New user? <Link to="/register">Create account</Link>
