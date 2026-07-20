@@ -34,7 +34,7 @@ button {
   cursor: pointer;
 }
 
-/* ===== NAVBAR ===== */
+/* NAVBAR */
 .nav {
   height: 88px;
   background: white;
@@ -1478,4 +1478,324 @@ td {
   min-height: 56px;
   border-radius: 14px;
   font-weight: 700;
+}
+
+
+/* =========================================================
+   CLEAN FACILITY SEARCH LAYOUT
+   This block intentionally overrides the older facility-card
+   rules above. Keep it at the end of styles.css.
+   ========================================================= */
+
+.facilityPage {
+  padding: 28px 34px;
+  overflow-x: hidden;
+}
+
+.facilityLayout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 330px;
+  gap: 20px;
+  align-items: start;
+  width: 100%;
+}
+
+.facilityList {
+  min-width: 0;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.facilityCard {
+  width: 100%;
+  min-width: 0;
+  min-height: 150px;
+  display: grid;
+  grid-template-columns: 125px minmax(0, 1fr) 120px;
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  margin: 14px 0;
+  background: #ffffff;
+  border: 1px solid #e8e1fa;
+  border-radius: 14px;
+  box-shadow: 0 5px 16px rgba(58, 34, 111, 0.05);
+  overflow: hidden;
+}
+
+.facilityCardImageWrap {
+  width: 125px;
+  height: 125px;
+  min-width: 125px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f2effa;
+}
+
+.facilityCardImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.facilityCardContent {
+  min-width: 0;
+  width: 100%;
+}
+
+.facilityCardTitleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.facilityCardTitleRow h3 {
+  min-width: 0;
+  margin: 0;
+  color: #0b153d;
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 800;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.facilityTypeBadge {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  color: var(--p);
+  background: #f0e9ff;
+  border-radius: 7px;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.facilityLocationLine,
+.facilityInsuranceLine,
+.facilityHours,
+.facilityRating {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: #49516e;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.facilityLocationLine {
+  margin-bottom: 9px;
+  font-weight: 600;
+}
+
+.facilityLocationLine svg,
+.facilityInsuranceLine svg,
+.facilityHours svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  color: var(--p);
+}
+
+.facilityServiceTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 9px;
+}
+
+.facilityServiceTags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 27px;
+  max-width: 100%;
+  padding: 5px 8px;
+  color: #6840cc;
+  background: #faf8ff;
+  border: 1px solid #e8e0ff;
+  border-radius: 7px;
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.facilityInsuranceLine {
+  margin-bottom: 9px;
+}
+
+.facilityInsuranceLine span {
+  min-width: 0;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.facilityCardBottom {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.facilityHours.openNow,
+.facilityHours.openNow svg {
+  color: #159b61;
+  font-weight: 700;
+}
+
+.facilityRating {
+  color: #3e4664;
+}
+
+.facilityStar {
+  color: #f5b51b;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.facilityProfileButton {
+  width: 112px;
+  min-width: 112px;
+  min-height: 39px;
+  align-self: end;
+  justify-self: end;
+  padding: 8px 10px;
+  color: var(--p);
+  background: #ffffff;
+  border: 1.5px solid #9a6df2;
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.facilityProfileButton:hover {
+  color: #ffffff;
+  background: var(--p);
+  transform: translateY(-1px);
+}
+
+.profile {
+  min-width: 0;
+}
+
+.profile > img,
+.profilePhoto img {
+  width: 100%;
+  height: 180px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 13px;
+}
+
+/* Medium screens: remove the side profile panel so cards stay readable. */
+@media (max-width: 1350px) {
+  .facilityLayout {
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+
+  .facilityLayout > .profile {
+    display: none;
+  }
+}
+
+/* Tablet layout */
+@media (max-width: 980px) {
+  .facilityPage {
+    padding: 22px 18px;
+  }
+
+  .facilityLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    display: none;
+  }
+
+  .facilityList {
+    padding: 12px;
+  }
+
+  .facilityCard {
+    grid-template-columns: 118px minmax(0, 1fr) 108px;
+    gap: 13px;
+    padding: 12px;
+  }
+
+  .facilityCardImageWrap {
+    width: 118px;
+    height: 118px;
+    min-width: 118px;
+  }
+}
+
+/* Mobile: image above details, no squeezed vertical text. */
+@media (max-width: 650px) {
+  .facilityHero {
+    padding: 24px 20px;
+  }
+
+  .wideSearch {
+    grid-template-columns: 1fr;
+  }
+
+  .facilityCard {
+    grid-template-columns: 96px minmax(0, 1fr);
+    min-height: 0;
+    align-items: start;
+  }
+
+  .facilityCardImageWrap {
+    width: 96px;
+    height: 110px;
+    min-width: 96px;
+  }
+
+  .facilityProfileButton {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    justify-self: stretch;
+  }
+
+  .facilityCardTitleRow h3 {
+    font-size: 15px;
+  }
+
+  .facilityServiceTags span {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 430px) {
+  .facilityCard {
+    grid-template-columns: 1fr;
+  }
+
+  .facilityCardImageWrap {
+    width: 100%;
+    height: 180px;
+  }
 }

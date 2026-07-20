@@ -1,4 +1,40 @@
 import React,{useEffect,useMemo,useState} from 'react';import{createRoot}from'react-dom/client';import{BrowserRouter,Routes,Route,Navigate,Link,useNavigate,useLocation}from'react-router-dom';import{Search,MessageCircle,HeartPulse,Shield,Building2,User,Lock,LogOut,Calendar,Clock,Droplet,Pill,Bell,AlertTriangle,BookOpen,Settings,Home as HomeIcon,Users,Activity,Plus,Trash2,X,Send,ChevronRight,ChevronLeft,Stethoscope,MapPin,Phone,Mail,Globe2,BarChart3}from'lucide-react';import'./styles.css';
+
+import kingFaisal from "./assets/king-faisal.jpg";
+import chukImage from "./assets/chuk.jpg";
+import kigaliDiabetesImage from "./assets/kigali-diabetes.jpg";
+import nderaImage from "./assets/ndera.jpg";
+import kicukiroHealthCenterImage from "./assets/kicukiro-health-center.jpg";
+import rwandaMilitaryImage from "./assets/rwanda-military.jpg";
+import bahoImage from "./assets/baho.jpg";
+import kibagabagaImage from "./assets/kibagabaga.jpg";
+import kacyiruImage from "./assets/kacyiru.jpg";
+import masakaImage from "./assets/masaka.jpg";
+import muhimaImage from "./assets/muhima.jpg";
+import kigaliEyeImage from "./assets/kigali-eye.jpg";
+import gasaboMedicalImage from "./assets/gasabo-medical.jpg";
+import remeraHealthCenterImage from "./assets/remera-health-center.jpg";
+import nyarugengeClinicImage from "./assets/nyarugenge-clinic.jpg";
+
+const facilityPlaceholder =
+  "data:image/svg+xml;charset=UTF-8," +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560">
+      <rect width="900" height="560" fill="#f3efff"/>
+      <rect x="285" y="150" width="330" height="260" rx="24" fill="#ffffff" stroke="#8b6fcf" stroke-width="8"/>
+      <rect x="410" y="210" width="80" height="140" rx="10" fill="#d8cff2"/>
+      <rect x="430" y="170" width="40" height="120" fill="#8b6fcf"/>
+      <rect x="390" y="210" width="120" height="40" fill="#8b6fcf"/>
+      <rect x="330" y="220" width="45" height="45" rx="6" fill="#d8cff2"/>
+      <rect x="525" y="220" width="45" height="45" rx="6" fill="#d8cff2"/>
+      <rect x="330" y="290" width="45" height="45" rx="6" fill="#d8cff2"/>
+      <rect x="525" y="290" width="45" height="45" rx="6" fill="#d8cff2"/>
+      <text x="450" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" fill="#4b347f">
+        Facility Image
+      </text>
+    </svg>
+  `);
+
 const KEY={user:'izi_user',users:'izi_users',logs:'izi_logs',meds:'izi_meds',reminders:'izi_reminders',chat:'izi_chat',settings:'izi_settings'};
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -7,6 +43,7 @@ const facilities = [
   {
     id: 1,
     name: "King Faisal Hospital",
+    image: kingFaisal,
     type: "Hospital",
     district: "Nyarugenge",
     distance: "1.2 km",
@@ -26,6 +63,7 @@ const facilities = [
   {
     id: 2,
     name: "CHUK Medical Center",
+    image: chukImage,
     type: "Hospital",
     district: "Nyarugenge",
     distance: "2.1 km",
@@ -45,6 +83,7 @@ const facilities = [
   {
     id: 3,
     name: "Kigali Diabetes Center",
+    image: kigaliDiabetesImage,
     type: "Clinic",
     district: "Gasabo",
     distance: "3.4 km",
@@ -64,6 +103,7 @@ const facilities = [
   {
     id: 4,
     name: "Ndera Polyclinic",
+    image: nderaImage,
     type: "Clinic",
     district: "Gasabo",
     distance: "4.2 km",
@@ -83,6 +123,7 @@ const facilities = [
   {
     id: 5,
     name: "Kicukiro Health Center",
+    image: kicukiroHealthCenterImage,
     type: "Health Center",
     district: "Kicukiro",
     distance: "5.6 km",
@@ -102,6 +143,7 @@ const facilities = [
   {
     id: 6,
     name: "Rwanda Military Hospital",
+    image: rwandaMilitaryImage,
     type: "Hospital",
     district: "Kicukiro",
     distance: "6.0 km",
@@ -121,6 +163,7 @@ const facilities = [
   {
     id: 7,
     name: "Baho International Hospital",
+    image: bahoImage,
     type: "Hospital",
     district: "Gasabo",
     distance: "4.8 km",
@@ -140,6 +183,7 @@ const facilities = [
   {
     id: 8,
     name: "Kibagabaga Hospital",
+    image: kibagabagaImage,
     type: "Hospital",
     district: "Gasabo",
     distance: "5.1 km",
@@ -159,6 +203,7 @@ const facilities = [
   {
     id: 9,
     name: "Kacyiru Hospital",
+    image: kacyiruImage,
     type: "Hospital",
     district: "Gasabo",
     distance: "3.9 km",
@@ -178,6 +223,7 @@ const facilities = [
   {
     id: 10,
     name: "Masaka Hospital",
+    image: masakaImage,
     type: "Hospital",
     district: "Kicukiro",
     distance: "8.4 km",
@@ -197,6 +243,7 @@ const facilities = [
   {
     id: 11,
     name: "Muhima Hospital",
+    image: muhimaImage,
     type: "Hospital",
     district: "Nyarugenge",
     distance: "2.7 km",
@@ -216,6 +263,7 @@ const facilities = [
   {
     id: 12,
     name: "Kigali Eye Clinic",
+    image: kigaliEyeImage,
     type: "Clinic",
     district: "Nyarugenge",
     distance: "1.9 km",
@@ -235,6 +283,7 @@ const facilities = [
   {
     id: 13,
     name: "Gasabo Medical Clinic",
+    image: gasaboMedicalImage,
     type: "Clinic",
     district: "Gasabo",
     distance: "4.5 km",
@@ -254,6 +303,7 @@ const facilities = [
   {
     id: 14,
     name: "Remera Health Center",
+    image: remeraHealthCenterImage,
     type: "Health Center",
     district: "Gasabo",
     distance: "3.8 km",
@@ -273,6 +323,7 @@ const facilities = [
   {
     id: 15,
     name: "Nyarugenge District Clinic",
+    image: nyarugengeClinicImage,
     type: "Clinic",
     district: "Nyarugenge",
     distance: "2.3 km",
@@ -675,8 +726,121 @@ function Facilities(){
     </div>
   </main>
 }
-function FacilityCard({f,onView}){return <div className="facilityCard"><div className="photo">Picture</div><div><h3>{f.name}<span>{f.type}</span></h3><p>{f.district} District • {f.distance}</p><div className="tags">{f.services.slice(0,3).map(s=><small key={s}>{s}</small>)}<small>+{Math.max(0,f.services.length-3)}</small></div><p>♙ {f.insurance.join(', ')}</p><p>◷ {f.hours} ⭐ {f.rating} ({f.reviews} reviews)</p></div><button onClick={onView} className="outline">View Profile</button></div>}
-function Profile({f}){if(!f)return null;return <aside className="profile"><button className="close"><X/></button><div className="profilePhoto">Picture</div><h2>{f.name}<span>{f.type}</span></h2><p>⭐ {f.rating} ({f.reviews} reviews) • {f.distance}</p><p><MapPin/> {f.location}</p><div className="iconRow"><button><Phone/>Call</button><button><MapPin/>Directions</button><button><Globe2/>Website</button></div><h3>About</h3><p>{f.description}</p><h3>Services</h3><div className="twoCols">{f.services.map(s=><span key={s}>✓ {s}</span>)}</div><h3>Specialists</h3>{f.specialists.map(s=><p key={s} className="doc"><User/> Dr. Demo - {s}</p>)}<h3>Insurance Accepted</h3><div className="tags">{f.insurance.map(i=><small key={i}>{i}</small>)}</div><h3>Contact</h3><p><Phone/> {f.phone}</p><p><Mail/> {f.email}</p><button className="primary full">Get Directions</button></aside>}
+function FacilityCard({f,onView}){
+  return (
+    <article className="facilityCard">
+      <div className="facilityCardImageWrap">
+        <img
+          className="facilityCardImage"
+          src={f.image || facilityPlaceholder}
+          alt={f.name}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = facilityPlaceholder;
+          }}
+        />
+      </div>
+
+      <div className="facilityCardContent">
+        <div className="facilityCardTitleRow">
+          <h3>{f.name}</h3>
+          <span className="facilityTypeBadge">{f.type}</span>
+        </div>
+
+        <p className="facilityLocationLine">
+          <MapPin size={17}/>
+          <strong>{f.district} District</strong>
+          <span>•</span>
+          <span>{f.distance}</span>
+        </p>
+
+        <div className="facilityServiceTags">
+          {f.services.slice(0,3).map((service)=>(
+            <span key={service}>{service}</span>
+          ))}
+          {f.services.length > 3 && <span>+{f.services.length-3}</span>}
+        </div>
+
+        <p className="facilityInsuranceLine">
+          <Shield size={17}/>
+          <span>{f.insurance.join(', ')}</span>
+        </p>
+
+        <div className="facilityCardBottom">
+          <p className={f.emergency ? 'facilityHours openNow' : 'facilityHours'}>
+            <Clock size={17}/>
+            <span>{f.hours}</span>
+          </p>
+
+          <p className="facilityRating">
+            <span className="facilityStar">★</span>
+            <strong>{f.rating}</strong>
+            <span>({f.reviews} reviews)</span>
+          </p>
+        </div>
+      </div>
+
+      <button onClick={onView} className="facilityProfileButton">
+        View Profile
+      </button>
+    </article>
+  );
+}
+function Profile({f}){
+  if(!f) return null;
+
+  return (
+    <aside className="profile">
+      <button className="close"><X/></button>
+
+      <img
+        src={f.image || facilityPlaceholder}
+        alt={f.name}
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = facilityPlaceholder;
+        }}
+        style={{
+          width: "100%",
+          height: "210px",
+          objectFit: "cover",
+          borderRadius: "16px",
+          marginBottom: "16px",
+        }}
+      />
+
+      <h2>{f.name}<span>{f.type}</span></h2>
+      <p>⭐ {f.rating} ({f.reviews} reviews) • {f.distance}</p>
+      <p><MapPin/> {f.location}</p>
+
+      <div className="iconRow">
+        <button><Phone/>Call</button>
+        <button><MapPin/>Directions</button>
+        <button><Globe2/>Website</button>
+      </div>
+
+      <h3>About</h3>
+      <p>{f.description}</p>
+
+      <h3>Services</h3>
+      <div className="twoCols">
+        {f.services.map(s=><span key={s}>✓ {s}</span>)}
+      </div>
+
+      <h3>Specialists</h3>
+      {f.specialists.map(s=><p key={s} className="doc"><User/> Dr. Demo - {s}</p>)}
+
+      <h3>Insurance Accepted</h3>
+      <div className="tags">{f.insurance.map(i=><small key={i}>{i}</small>)}</div>
+
+      <h3>Contact</h3>
+      <p><Phone/> {f.phone}</p>
+      <p><Mail/> {f.email}</p>
+
+      <button className="primary full">Get Directions</button>
+    </aside>
+  );
+}
 function NCD({user}) {
   const [tab, setTab] = useState('dashboard');
 
@@ -1912,6 +2076,7 @@ function Admin() {
     const newFacility = {
       id: Date.now(),
       name: form.name,
+      image: facilityPlaceholder,
       type: form.type,
       district: form.district,
       services: form.services.split(",").map((x) => x.trim()),
