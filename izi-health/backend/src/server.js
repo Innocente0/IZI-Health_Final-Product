@@ -16,7 +16,26 @@ const PORT = process.env.PORT || 4000;
 const ML_SERVICE_URL =
   process.env.ML_SERVICE_URL || "http://localhost:8000";
 
-app.use(cors());
+const allowedOrigins = (process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (
+        !origin ||
+        allowedOrigins.length === 0 ||
+        allowedOrigins.includes(origin)
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked origin: ${origin}`));
+    },
+  })
+);
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -394,7 +413,7 @@ app.post("/api/reminders", async (req, res) => {
       data: {
         title: title.trim(),
         description: description || null,
-        reminderDate: new Date(reminderDate),
+        reminderAt: new Date(reminderDate),
         completed:
           completed !== undefined ? Boolean(completed) : false,
         userId: userId ? Number(userId) : null,
@@ -423,7 +442,7 @@ app.get("/api/reminders", async (req, res) => {
     const reminders = await prisma.reminder.findMany({
       where,
       orderBy: {
-        reminderDate: "asc",
+        reminderAt: "asc",
       },
     });
 
