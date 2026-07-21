@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const axios = require("axios");
+const bcrypt = require("bcryptjs");
 
 const prisma = require("./lib/prisma");
 const chatRoutes = require("./routes/chatRoutes");
@@ -62,6 +63,7 @@ app.post("/api/auth/register", async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = String(password).trim();
 
     const existingUser = await prisma.user.findUnique({
       where: {
@@ -79,14 +81,16 @@ app.post("/api/auth/register", async (req, res) => {
       data: {
         name: name.trim(),
         email: normalizedEmail,
-        password,
+        password: await bcrypt.hash(normalizedPassword, 10),
         role: "USER",
       },
     });
 
+    const { password: _password, ...safeUser } = user;
+
     return res.status(201).json({
       token: "demo-token",
-      user,
+      user: safeUser,
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -108,6 +112,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = String(password).trim();
 
     const user = await prisma.user.findUnique({
       where: {
@@ -115,15 +120,23 @@ app.post("/api/auth/login", async (req, res) => {
       },
     });
 
-    if (!user || user.password !== password) {
+    const passwordMatches =
+      user &&
+      (user.password === normalizedPassword ||
+        (user.password.startsWith("$2") &&
+          (await bcrypt.compare(normalizedPassword, user.password))));
+
+    if (!passwordMatches) {
       return res.status(401).json({
         message: "Invalid email or password.",
       });
     }
 
+    const { password: _password, ...safeUser } = user;
+
     return res.json({
       token: "demo-token",
-      user,
+      user: safeUser,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -172,6 +185,13 @@ app.get("/api/facilities/:id", (req, res) => {
 app.get("/api/users", async (req, res) => {
   try {
     const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
       orderBy: {
         createdAt: "desc",
       },

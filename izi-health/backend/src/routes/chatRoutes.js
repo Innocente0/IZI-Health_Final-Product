@@ -5,6 +5,7 @@ const facilities = require("../seedFacilities");
 const router = express.Router();
 const ML_SERVICE_URL =
   process.env.ML_SERVICE_URL || "https://izi-health-ml.onrender.com";
+const CHATBOT_TIMEOUT_MS = Number(process.env.CHATBOT_TIMEOUT_MS || 15000);
 
 const typoWords = {
   diabets: "diabetes",
@@ -119,9 +120,15 @@ router.post("/", async (req, res) => {
       matchedFacilities = findFacilities("emergency");
     } else {
       try {
-        const mlResponse = await axios.post(`${ML_SERVICE_URL}/chatbot-qa`, {
-          question,
-        });
+        const mlResponse = await axios.post(
+          `${ML_SERVICE_URL}/chatbot-qa`,
+          {
+            question,
+          },
+          {
+            timeout: CHATBOT_TIMEOUT_MS,
+          }
+        );
 
         answer = mlResponse.data.answer || "";
         confidence = mlResponse.data.confidence || mlResponse.data.similarity || null;
