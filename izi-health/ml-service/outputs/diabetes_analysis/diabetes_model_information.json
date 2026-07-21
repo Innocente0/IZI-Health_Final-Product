@@ -1,0 +1,8 @@
+{
+    "model_file": "C:\\IZI-Health_Final-Product\\izi-health\\ml-service\\models\\diabetes_model.pkl",
+    "saved_object_type": "<class 'sklearn.pipeline.Pipeline'>",
+    "extracted_model_type": "<class 'sklearn.pipeline.Pipeline'>",
+    "target_column": "Outcome",
+    "saved_feature_names": null,
+    "metadata_keys": []
+}
