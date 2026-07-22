@@ -1799,3 +1799,22 @@ td {
     height: 180px;
   }
 }
+.safetyNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 1180px;
+  margin: 18px auto;
+  padding: 12px 14px;
+  border: 1px solid #f1c36d;
+  border-radius: 8px;
+  background: #fff8e8;
+  color: #5f4308;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.safetyNotice svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}

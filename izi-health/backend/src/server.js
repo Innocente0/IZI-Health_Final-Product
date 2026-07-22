@@ -5,6 +5,7 @@ const cors = require("cors");
 const http = require("http");
 const axios = require("axios");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const prisma = require("./lib/prisma");
 const chatRoutes = require("./routes/chatRoutes");
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 4000;
 
 const ML_SERVICE_URL =
   process.env.ML_SERVICE_URL || "http://localhost:8000";
+const JWT_SECRET = process.env.JWT_SECRET || "izi_health_secret";
 
 const allowedOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
@@ -38,6 +40,57 @@ app.use(
   })
 );
 app.use(express.json());
+
+function toSafeUser(user) {
+  const { password, ...safeUser } = user;
+  return safeUser;
+}
+
+function signToken(user) {
+  return jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    },
+    JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+}
+
+function authenticate(req, res, next) {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : null;
+
+  if (!token) {
+    return res.status(401).json({
+      message: "Authentication required.",
+    });
+  }
+
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    return next();
+  } catch (error) {
+    return res.status(401).json({
+      message: "Invalid or expired token.",
+    });
+  }
+}
+
+function requireAdmin(req, res, next) {
+  if (req.user?.role !== "ADMIN") {
+    return res.status(403).json({
+      message: "Admin access required.",
+    });
+  }
+
+  return next();
+}
 
 app.get("/", (req, res) => {
   res.json({
@@ -86,11 +139,9 @@ app.post("/api/auth/register", async (req, res) => {
       },
     });
 
-    const { password: _password, ...safeUser } = user;
-
     return res.status(201).json({
-      token: "demo-token",
-      user: safeUser,
+      token: signToken(user),
+      user: toSafeUser(user),
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -132,11 +183,9 @@ app.post("/api/auth/login", async (req, res) => {
       });
     }
 
-    const { password: _password, ...safeUser } = user;
-
     return res.json({
-      token: "demo-token",
-      user: safeUser,
+      token: signToken(user),
+      user: toSafeUser(user),
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -182,7 +231,7 @@ app.get("/api/facilities/:id", (req, res) => {
   return res.json(facility);
 });
 
-app.get("/api/users", async (req, res) => {
+app.get("/api/users", authenticate, requireAdmin, async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -207,7 +256,7 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-app.post("/api/health-logs", async (req, res) => {
+app.post("/api/health-logs", authenticate, async (req, res) => {
   try {
 
     let prediction;
@@ -299,9 +348,7 @@ app.post("/api/health-logs", async (req, res) => {
     recommendation:
       prediction?.recommendation || null,
 
-    userId: req.body.userId
-      ? Number(req.body.userId)
-      : null,
+    userId: req.user.id,
   },
 });
 
@@ -315,13 +362,18 @@ return res.status(201).json(savedLog);    //Added this line to return the saved 
   }
 });
 
-app.get("/api/health-logs", async (req, res) => {
+app.get("/api/health-logs", authenticate, async (req, res) => {
   try {
-    const where = req.query.userId
-      ? {
-          userId: Number(req.query.userId),
-        }
-      : {};
+    const where =
+      req.user.role === "ADMIN"
+        ? req.query.userId
+          ? {
+              userId: Number(req.query.userId),
+            }
+          : {}
+        : {
+            userId: req.user.id,
+          };
 
     const logs = await prisma.healthLog.findMany({
       where,
@@ -340,7 +392,7 @@ app.get("/api/health-logs", async (req, res) => {
   }
 });
 
-app.post("/api/medications", async (req, res) => {
+app.post("/api/medications", authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -366,7 +418,7 @@ app.post("/api/medications", async (req, res) => {
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         notes: notes || null,
-        userId: userId ? Number(userId) : null,
+        userId: req.user.id,
       },
     });
 
@@ -381,13 +433,16 @@ app.post("/api/medications", async (req, res) => {
   }
 });
 
-app.get("/api/medications", async (req, res) => {
+app.get("/api/medications", authenticate, async (req, res) => {
   try {
-    const where = req.query.userId
-      ? {
-          userId: Number(req.query.userId),
-        }
-      : {};
+    const where =
+      req.user.role === "ADMIN" && req.query.userId
+        ? {
+            userId: Number(req.query.userId),
+          }
+        : {
+            userId: req.user.id,
+          };
 
     const medications = await prisma.medication.findMany({
       where,
@@ -407,7 +462,7 @@ app.get("/api/medications", async (req, res) => {
   }
 });
 
-app.post("/api/reminders", async (req, res) => {
+app.post("/api/reminders", authenticate, async (req, res) => {
   try {
     const {
       title,
@@ -436,7 +491,7 @@ app.post("/api/reminders", async (req, res) => {
         reminderAt: new Date(reminderDate),
         completed:
           completed !== undefined ? Boolean(completed) : false,
-        userId: userId ? Number(userId) : null,
+        userId: req.user.id,
       },
     });
 
@@ -451,13 +506,16 @@ app.post("/api/reminders", async (req, res) => {
   }
 });
 
-app.get("/api/reminders", async (req, res) => {
+app.get("/api/reminders", authenticate, async (req, res) => {
   try {
-    const where = req.query.userId
-      ? {
-          userId: Number(req.query.userId),
-        }
-      : {};
+    const where =
+      req.user.role === "ADMIN" && req.query.userId
+        ? {
+            userId: Number(req.query.userId),
+          }
+        : {
+            userId: req.user.id,
+          };
 
     const reminders = await prisma.reminder.findMany({
       where,
