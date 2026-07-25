@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Building2, MessageCircle, HeartPulse, Shield, Mail, Phone, MapPin } from "lucide-react";
 import SafetyNotice from "../components/SafetyNotice.jsx";
+import qualityCareImage from "../assets/king-faisal.jpg";
 export function Home() {
   const nav = useNavigate();
 
@@ -79,7 +81,9 @@ export function Home() {
         </div>
 
         <div className="quality">
-          <div className="hospitalArt">+</div>
+          <div className="hospitalArt">
+            <img src={qualityCareImage} alt="King Faisal Hospital in Kigali" />
+          </div>
 
           <div>
             <h2>Quality care, closer to you.</h2>
@@ -113,6 +117,5 @@ export function Home() {
 }
 
 function SearchInput({label}){return <div className="sinput"><small>{label}</small><span>Select {label.toLowerCase()}</span></div>}
-function Info({icon,title,text,action,to,chat}){const nav=useNavigate();return <div className="info"><div className="round">{icon}</div><h3>{title}</h3><p>{text}</p><button onClick={()=>chat?window.dispatchEvent(new Event('open-chat')):nav(to)}>{action} →</button></div>}
+function Info({icon,title,text,action,to,chat}){const nav=useNavigate();const[active,setActive]=useState(false);const open=()=>{setActive(true);setTimeout(()=>setActive(false),420);if(chat){window.dispatchEvent(new Event('open-chat'));return}setTimeout(()=>nav(to),130)};return <div className={`info serviceCard ${active?"serviceCardActive":""}`} role="button" tabIndex={0} onClick={open} onKeyDown={(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}}}><div className="round">{icon}</div><h3>{title}</h3><p>{text}</p><button type="button" tabIndex={-1}>{action} →</button></div>}
 export function About(){return <main className="page"><h1>About IZI Health</h1><p className="lead">IZI Health is a patient-facing digital platform for healthcare navigation, AI-assisted symptom guidance, and basic diabetes self-management support in Rwanda.</p><SafetyNotice/><div className="grid2"><div className="panel"><h2>Our Mission</h2><p>To help patients and caregivers find appropriate facilities, understand available services, identify accepted insurance, and manage basic NCD-related care tasks safely.</p></div><div className="panel"><h2>Safety Boundary</h2><p>The chatbot does not diagnose, prescribe medication, or replace clinical assessment. It provides navigation guidance and encourages professional care.</p></div></div><div className="panel"><h2>Contact Us</h2><p><Mail/> support@izihealth.rw</p><p><Phone/> +250 788 000 000</p><p><MapPin/> Kigali, Rwanda</p></div></main>}
-

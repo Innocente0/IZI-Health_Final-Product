@@ -5,6 +5,9 @@
   --muted: #68708e;
   --line: #e6ddff;
   --bg: #fbfaff;
+  --focus: 0 0 0 4px rgba(124, 76, 232, 0.18);
+  --button-shadow: 0 12px 24px rgba(124, 76, 232, 0.22);
+  --button-shadow-soft: 0 10px 20px rgba(67, 48, 122, 0.12);
 }
 
 * {
@@ -32,6 +35,7 @@ textarea {
 
 button {
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* NAVBAR */
@@ -83,6 +87,7 @@ button {
 .links a {
   padding: 12px 16px;
   border-radius: 10px;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
 .links a:hover {
@@ -96,6 +101,36 @@ button {
   align-items: center;
 }
 
+.auth .primary,
+.auth .outline {
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.auth .primary:hover,
+.auth .outline:hover,
+.auth .primary:active,
+.auth .outline:active {
+  transform: none;
+}
+
+.auth .outline:hover,
+.auth .outline:active,
+.auth .outline.authActive {
+  color: white;
+  background: var(--p);
+  border-color: var(--p);
+  box-shadow: 0 8px 18px rgba(124, 76, 232, 0.18);
+}
+
+.auth .primary:hover,
+.auth .primary:active,
+.auth .primary.authActive {
+  color: var(--p);
+  background: white;
+  border: 1px solid var(--p);
+  box-shadow: 0 8px 18px rgba(124, 76, 232, 0.12);
+}
+
 /* ===== BUTTONS ===== */
 .primary,
 .outline,
@@ -107,11 +142,24 @@ button {
   gap: 8px;
   align-items: center;
   justify-content: center;
+  min-height: 44px;
+  font-weight: 700;
+  line-height: 1;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    opacity 0.18s ease;
 }
 
 .primary {
   background: linear-gradient(135deg, var(--p), #8c5bf0);
   color: white;
+  box-shadow: 0 8px 18px rgba(124, 76, 232, 0.18);
 }
 
 .outline {
@@ -123,6 +171,53 @@ button {
 .soft {
   background: #f0e9ff;
   color: var(--p);
+}
+
+.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--button-shadow);
+  background: linear-gradient(135deg, #6f42db, #7f4feb);
+}
+
+.outline:hover,
+.soft:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--button-shadow-soft);
+}
+
+.outline:hover {
+  border-color: #bba1f5;
+  background: #fbf8ff;
+}
+
+.soft:hover {
+  background: #e7ddff;
+}
+
+button:focus-visible,
+a:focus-visible,
+.primary:focus-visible,
+.outline:focus-visible,
+.soft:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+button:active,
+.primary:active,
+.outline:active,
+.soft:active {
+  transform: translateY(0) scale(0.99);
+}
+
+button:disabled,
+.primary:disabled,
+.outline:disabled,
+.soft:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+  box-shadow: none;
 }
 
 .big {
@@ -222,6 +317,64 @@ button {
   min-height: 230px;
 }
 
+.serviceCard {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease,
+    background 0.22s ease;
+}
+
+.serviceCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid rgba(124, 76, 232, 0.12);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.serviceCard:hover,
+.serviceCard:focus-visible {
+  transform: translateY(-8px);
+  border-color: #c7b5f7;
+  background: #ffffff;
+  box-shadow: 0 18px 38px rgba(76, 48, 150, 0.14);
+  outline: none;
+}
+
+.serviceCard:hover::after,
+.serviceCard:focus-visible::after,
+.serviceCardActive::after {
+  opacity: 1;
+}
+
+.serviceCard:hover .round,
+.serviceCard:focus-visible .round,
+.serviceCardActive .round {
+  color: white;
+  background: linear-gradient(135deg, var(--p), #9b6dff);
+  box-shadow: 0 10px 20px rgba(124, 76, 232, 0.22);
+}
+
+.serviceCard:hover button,
+.serviceCard:focus-visible button,
+.serviceCardActive button {
+  color: #5d34c9;
+}
+
+.serviceCard:active,
+.serviceCardActive {
+  transform: translateY(-3px);
+  border-color: var(--p);
+  box-shadow: 0 14px 30px rgba(124, 76, 232, 0.22);
+}
+
 .round {
   width: 58px;
   height: 58px;
@@ -231,6 +384,7 @@ button {
   display: grid;
   place-items: center;
   margin-bottom: 12px;
+  transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
 }
 
 .info p,
@@ -246,6 +400,10 @@ button {
   color: var(--p);
   font-weight: 700;
   margin-top: 16px;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+  transition: color 0.22s ease;
 }
 
 .quality {
@@ -262,12 +420,18 @@ button {
 
 .hospitalArt {
   height: 230px;
-  border-radius: 45% 55% 46% 54%;
-  background: linear-gradient(135deg, #e9dcff, #fff);
-  color: var(--p);
-  font-size: 110px;
-  display: grid;
-  place-items: center;
+  border-radius: 18px;
+  background: #e9dcff;
+  overflow: hidden;
+  box-shadow: 0 14px 28px rgba(64, 44, 120, 0.12);
+}
+
+.hospitalArt img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
 }
 
 .stats {
@@ -323,6 +487,22 @@ button {
   gap: 14px;
 }
 
+.authSwitch {
+  margin: 4px 0 0;
+  color: var(--p);
+}
+
+.authSwitch a {
+  color: var(--p);
+  font-weight: 800;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.authSwitch a:hover,
+.authSwitch a:active {
+  color: #4e28b8;
+}
+
 .input,
 .adminTop input {
   border: 1px solid var(--line);
@@ -332,8 +512,47 @@ button {
   width: 100%;
 }
 
+.passwordField {
+  position: relative;
+}
+
+.passwordField .input {
+  padding-right: 48px;
+}
+
+.passwordField button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #68708e;
+  transform: translateY(-50%);
+}
+
+.passwordField button:hover {
+  background: #f0e9ff;
+  color: var(--p);
+}
+
+.passwordHint {
+  margin-top: -8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .error {
   color: #d21b44;
+}
+
+.success {
+  color: #15803d;
+  line-height: 1.5;
 }
 
 /* ===== FACILITY PAGE ===== */
@@ -1231,29 +1450,35 @@ td {
 /* ===== CHATBOT ===== */
 .chatBtn {
   position: fixed;
-  right: 32px;
-  bottom: 28px;
-  width: 72px;
-  height: 72px;
+  right: 28px;
+  bottom: 24px;
+  width: 58px;
+  height: 58px;
   border: 0;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--p), #8d5afa);
   color: white;
-  box-shadow: 0 12px 30px #7c4ce84a;
+  box-shadow: 0 10px 24px #7c4ce84a;
   z-index: 30;
   display: grid;
   place-items: center;
 }
 
+.chatBtn svg {
+  width: 25px;
+  height: 25px;
+}
+
 .chat {
   position: fixed;
-  right: 32px;
-  bottom: 112px;
-  width: 380px;
-  max-height: 610px;
+  right: 28px;
+  top: 104px;
+  bottom: 24px;
+  width: 350px;
+  max-height: calc(100vh - 128px);
   background: white;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 16px;
   box-shadow: 0 20px 60px #14214b2b;
   z-index: 30;
   overflow: hidden;
@@ -1262,12 +1487,13 @@ td {
 }
 
 .chatHead {
-  height: 70px;
+  min-height: 60px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  padding: 0 18px;
+  padding: 0 14px 0 16px;
   border-bottom: 1px solid var(--line);
+  background: linear-gradient(135deg, #ffffff, #f7f3ff);
 }
 
 .chatHead span {
@@ -1280,45 +1506,66 @@ td {
 .chatHead button {
   margin-left: auto;
   border: 0;
-  background: white;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: transparent;
+  color: #59607f;
+}
+
+.chatHead button:hover {
+  background: #efe8ff;
+  color: var(--p);
+}
+
+.chatHead .chatClearBtn {
+  margin-left: auto;
+  width: auto;
+  height: 32px;
+  padding: 0 10px;
+  color: #6840cc;
+  background: #f3edff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chatHead .chatCloseBtn {
+  margin-left: 4px;
+  width: 34px;
+  height: 34px;
 }
 
 .chatBody {
-  padding: 18px;
+  flex: 1;
+  min-height: 0;
+  padding: 14px;
   overflow: auto;
-  max-height: 350px;
+  scroll-behavior: smooth;
 }
 
 .bubble {
   background: #f7f4ff;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 12px;
-  margin: 10px 0;
+  border-radius: 13px;
+  padding: 11px 12px;
+  margin: 9px 0;
   white-space: pre-line;
+  line-height: 1.45;
+  font-size: 14px;
 }
 
 .bubble.user {
   background: linear-gradient(135deg, var(--p), #8c5bf0);
   color: white;
-  margin-left: 50px;
-}
-
-.chatActions {
-  text-align: right;
-  padding: 0 16px;
-}
-
-.chatActions button {
-  border: 0;
-  background: white;
-  color: var(--p);
+  margin-left: 44px;
 }
 
 .chatInput {
   display: flex;
   gap: 8px;
   padding: 12px;
+  border-top: 1px solid var(--line);
+  background: #fff;
 }
 
 .chatInput input {
@@ -1329,7 +1576,7 @@ td {
 }
 
 .chatInput button {
-  width: 44px;
+  width: 42px;
   border: 0;
   border-radius: 12px;
   background: var(--p);
@@ -1407,7 +1654,15 @@ td {
 
   .chat {
     right: 10px;
+    top: 96px;
+    bottom: 18px;
     width: calc(100vw - 20px);
+    max-height: calc(100vh - 114px);
+  }
+
+  .chatBtn {
+    right: 18px;
+    bottom: 18px;
   }
 }
 
@@ -1494,7 +1749,7 @@ td {
 
 .facilityLayout {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 330px;
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 20px;
   align-items: start;
   width: 100%;
@@ -1696,7 +1951,72 @@ td {
 }
 
 .profile {
+  position: fixed;
+  top: 104px;
+  right: 24px;
+  bottom: 24px;
+  width: 360px;
   min-width: 0;
+  z-index: 25;
+  padding: 18px;
+  overflow-y: auto;
+  box-shadow: 0 22px 60px rgba(20, 33, 75, 0.2);
+  animation: profileSlideIn 0.2s ease;
+}
+
+@keyframes profileSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.profile .close {
+  position: sticky;
+  top: 0;
+  float: none;
+  margin-left: auto;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #f7f3ff;
+  color: var(--p);
+  z-index: 1;
+}
+
+.profileRatingBox {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 14px;
+  margin: 14px 0;
+  background: #fbfaff;
+}
+
+.profileStars {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 4px;
+}
+
+.profileStars button {
+  border: 0;
+  background: transparent;
+  color: #c8bfdc;
+  font-size: 25px;
+  line-height: 1;
+  padding: 2px;
+}
+
+.profileStars button.selected,
+.profileStars button:hover {
+  color: #f5b400;
 }
 
 .profile > img,
@@ -1716,7 +2036,7 @@ td {
   }
 
   .facilityLayout > .profile {
-    display: none;
+    display: block;
   }
 }
 
@@ -1736,6 +2056,14 @@ td {
 
   .facilityList {
     padding: 12px;
+  }
+
+  .profile {
+    left: 12px;
+    right: 12px;
+    top: 96px;
+    bottom: 18px;
+    width: auto;
   }
 
   .facilityCard {

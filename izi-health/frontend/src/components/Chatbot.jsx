@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HeartPulse, MessageCircle, Send, X } from "lucide-react";
-import SafetyNotice from "./SafetyNotice.jsx";
 import { API_URL, KEY, getStored, setStored } from "../config.js";
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
+  const bodyRef = useRef(null);
 
   const [messages, setMessages] = useState(
     getStored(KEY.chat, [
@@ -17,6 +17,15 @@ export default function Chatbot() {
 
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !bodyRef.current) return;
+
+    bodyRef.current.scrollTo({
+      top: bodyRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, loading, open]);
 
   useEffect(() => {
     const handleOpenChat = () => setOpen(true);
@@ -112,12 +121,16 @@ export default function Chatbot() {
             <b>Health Navigator</b>
             <span>AI</span>
 
-            <button type="button" onClick={() => setOpen(false)}>
+            <button type="button" className="chatClearBtn" onClick={clear}>
+              Clear
+            </button>
+
+            <button type="button" className="chatCloseBtn" onClick={() => setOpen(false)}>
               <X />
             </button>
           </div>
 
-          <div className="chatBody">
+          <div className="chatBody" ref={bodyRef}>
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -155,12 +168,6 @@ export default function Chatbot() {
             {loading && <div className="bubble">Thinking...</div>}
           </div>
 
-          <div className="chatActions">
-            <button type="button" onClick={clear}>
-              Clear history
-            </button>
-          </div>
-
           <div className="chatInput">
             <input
               value={text}
@@ -178,18 +185,14 @@ export default function Chatbot() {
               <Send />
             </button>
           </div>
-
-          <SafetyNotice />
         </div>
       )}
 
-      <button
-        type="button"
-        className="chatBtn"
-        onClick={() => setOpen(!open)}
-      >
-        {open ? <X /> : <MessageCircle />}
-      </button>
+      {!open && (
+        <button type="button" className="chatBtn" onClick={() => setOpen(true)}>
+          <MessageCircle />
+        </button>
+      )}
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Activity, AlertTriangle, BarChart3, Bell, BookOpen, Calendar, Clock, Droplet, HeartPulse, Home as HomeIcon, Pill, Plus, Settings, Trash2 } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, Bell, BookOpen, Calendar, ChevronRight, Clock, Droplet, HeartPulse, Home as HomeIcon, MessageCircle, Pill, Plus, Settings, Shield, Trash2, X } from "lucide-react";
 import SafetyNotice from "../components/SafetyNotice.jsx";
 import { API_URL, KEY, authHeaders, getStored, setStored } from "../config.js";
 
@@ -97,7 +97,7 @@ function NCDDashboard({ user, setTab }) {
     <>
       <div className="between">
         <div>
-          <h1>Welcome back, {user.name.split(" ")[0]} 👋</h1>
+          <h1>Welcome back, {user.name.split(" ")[0]} </h1>
           <p>Here is your diabetes support summary for today.</p>
         </div>
 

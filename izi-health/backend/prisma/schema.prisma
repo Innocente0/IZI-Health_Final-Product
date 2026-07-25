@@ -7,12 +7,15 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      String   @default("USER")
-  createdAt DateTime @default(now())
+  id                         Int       @id @default(autoincrement())
+  name                       String
+  email                      String    @unique
+  password                   String
+  role                       String    @default("USER")
+  emailVerified              Boolean   @default(false)
+  emailVerificationToken     String?   @unique
+  emailVerificationExpiresAt DateTime?
+  createdAt                  DateTime  @default(now())
 
   healthLogs  HealthLog[]
   medications Medication[]

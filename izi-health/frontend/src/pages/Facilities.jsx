@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, MapPin, Shield, Phone, Mail, Globe2, Stethoscope, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Search, MapPin, Shield, Phone, Mail, Globe2, ChevronLeft, ChevronRight, X, Clock, User } from "lucide-react";
 import { facilities, facilityPlaceholder } from "../data/facilities.js";
 const searchTypos = {
   diabets: "diabetes",
@@ -62,14 +62,17 @@ export default function Facilities(){
 
   const [q,setQ]=useState(initialSearch);
   const [page,setPage]=useState(1);
-  const [selected,setSelected]=useState(
-    facilities.find(f => f.name.toLowerCase().includes(initialSearch.toLowerCase())) || facilities[0]
-  );
+  const [selected,setSelected]=useState(null);
+  const [ratings,setRatings]=useState({});
 
   const per=4;
 
   const filtered = useMemo(() => {
-  const expandedQuery = expandSearch(q);
+  const expandedQuery = expandSearch(q).trim();
+
+  if (!expandedQuery) {
+    return facilities;
+  }
 
   return facilities.filter((f) => {
     const searchable = (
@@ -137,7 +140,7 @@ export default function Facilities(){
 ].map(x=>
           
           <label key={x}>
-            <input type="checkbox" onChange={e=>setQ(e.target.checked&&x!=='All Districts'?x:'')}/> {x}
+            <input type="checkbox" onChange={e=>setQ(e.target.checked&&!x.startsWith('All')?x:'')}/> {x}
           </label>
         )}
       </aside>
@@ -145,7 +148,6 @@ export default function Facilities(){
       <section className="facilityList">
         <div className="between">
           <b>{filtered.length} facilities found</b>
-          <select><option>Nearest</option><option>Highest rated</option></select>
         </div>
 
         {list.map(f=><FacilityCard key={f.id} f={f} onView={()=>setSelected(f)}/>)}
@@ -159,7 +161,12 @@ export default function Facilities(){
         </div>
       </section>
 
-      <Profile f={selected}/>
+      <Profile
+        f={selected}
+        rating={selected ? ratings[selected.id] || 0 : 0}
+        onRate={(value)=>setRatings({...ratings,[selected.id]:value})}
+        onClose={()=>setSelected(null)}
+      />
     </div>
   </main>
 }
@@ -223,12 +230,12 @@ function FacilityCard({f,onView}){
     </article>
   );
 }
-function Profile({f}){
+function Profile({f,rating,onRate,onClose}){
   if(!f) return null;
 
   return (
     <aside className="profile">
-      <button className="close"><X/></button>
+      <button className="close" onClick={onClose} aria-label="Close facility profile"><X/></button>
 
       <img
         src={f.image || facilityPlaceholder}
@@ -254,6 +261,24 @@ function Profile({f}){
         <button><Phone/>Call</button>
         <button><MapPin/>Directions</button>
         <button><Globe2/>Website</button>
+      </div>
+
+      <div className="profileRatingBox">
+        <b>Rate this facility</b>
+        <div className="profileStars">
+          {[1,2,3,4,5].map((value)=>(
+            <button
+              type="button"
+              key={value}
+              className={rating >= value ? "selected" : ""}
+              onClick={()=>onRate(value)}
+              aria-label={`Rate ${value} star${value > 1 ? "s" : ""}`}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+        <small>{rating ? `You rated this ${rating}/5` : "No rating yet"}</small>
       </div>
 
       <h3>About</h3>

@@ -4,6 +4,7 @@ import {
   BrowserRouter,
   Link,
   Navigate,
+  NavLink,
   Route,
   Routes,
   useLocation,
@@ -14,7 +15,7 @@ import "./styles.css";
 import Chatbot from "./components/Chatbot.jsx";
 import { KEY, currentUser, setStored } from "./config.js";
 import Admin from "./pages/Admin.jsx";
-import { Login, Register } from "./pages/AuthPages.jsx";
+import { Login, Register, VerifyEmail } from "./pages/AuthPages.jsx";
 import Facilities from "./pages/Facilities.jsx";
 import NCD from "./pages/NCD.jsx";
 import { About, Home } from "./pages/PublicPages.jsx";
@@ -46,7 +47,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login onLogin={login} />} />
-        <Route path="/register" element={<Register onLogin={login} />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail onLogin={login} />} />
         <Route
           path="/facilities"
           element={
@@ -125,12 +127,18 @@ function Navbar({ user, logout }) {
           </>
         ) : (
           <>
-            <Link to="/login" className="outline">
+            <NavLink
+              to="/login"
+              className={({ isActive }) => `outline ${isActive ? "authActive" : ""}`}
+            >
               Login
-            </Link>
-            <Link to="/register" className="primary">
+            </NavLink>
+            <NavLink
+              to="/register"
+              className={({ isActive }) => `primary ${isActive ? "authActive" : ""}`}
+            >
               Register
-            </Link>
+            </NavLink>
           </>
         )}
       </div>

@@ -1,14 +1,36 @@
 # IZI Health
 
-IZI Health is a web-based healthcare navigation and NCD support platform designed for Kigali, Rwanda. The system helps users search healthcare facilities, view facility profiles, chat with a healthcare navigation assistant, record diabetes-related health logs, receive ML-based risk feedback, manage medications, set reminders, and generate weekly health reports.
+IZI Health is a web-based healthcare navigation and NCD support platform for Kigali, Rwanda. It helps users search healthcare facilities, view facility profiles, ask a healthcare navigation chatbot, record diabetes-related health logs, receive ML-based risk feedback, manage medications, set reminders, and review weekly health summaries.
 
-Video Demo: https://drive.google.com/drive/folders/1IZGKCo4Z1agbVpTTtLIb0hZtmbrUd1_u?usp=sharing
+Live frontend:
 
-## Main Features
+```txt
+https://izi-health.onrender.com
+```
+
+Backend API:
+
+```txt
+https://izi-health-backend.onrender.com
+```
+
+ML service:
+
+```txt
+https://izi-health-ml.onrender.com
+```
+
+Video demo:
+
+```txt
+https://drive.google.com/drive/folders/1IZGKCo4Z1agbVpTTtLIb0hZtmbrUd1_u?usp=sharing
+```
+
+## Features
 
 - User registration and login
-- Healthcare facility search
-- Facility profile viewing
+- JWT-based backend authentication
+- Healthcare facility search and facility profile viewing
 - Chatbot-based health navigation
 - MedQuAD-based healthcare question answering
 - Diabetes health log tracking
@@ -18,24 +40,31 @@ Video Demo: https://drive.google.com/drive/folders/1IZGKCo4Z1agbVpTTtLIb0hZtmbrU
 - Warning signs checklist
 - Weekly health report
 - Diabetes education page
-- Admin dashboard
+- Admin dashboard prototype
 
 ## Technology Stack
 
-### Frontend
+Frontend:
+
 - React
 - Vite
 - JavaScript
 - CSS
 - Lucide React icons
 
-### Backend
+Backend:
+
 - Node.js
 - Express.js
+- Prisma
+- PostgreSQL
+- JWT
+- bcryptjs
 - CORS
 - Axios
 
-### ML Service
+ML service:
+
 - Python
 - FastAPI
 - Scikit-learn
@@ -48,73 +77,105 @@ Video Demo: https://drive.google.com/drive/folders/1IZGKCo4Z1agbVpTTtLIb0hZtmbrU
 
 ## Project Structure
 
-```text
-izi-health-final/
-│
-├── frontend/
-│   ├── src/
-│   │   ├── main.jsx
-│   │   └── styles.css
-│   ├── package.json
-|   ├── index.html
-│   └── package.json
-│    
-├── backend/
-│   ├── src/
-│   │   ├── server.js
-│   │   ├── seedFacilities.js
-│   │   └── routes/
-│   │       └── chatRoutes.js
-│   ├── package.json
-|   ├── package-lock.json
-│   └── .env. example
-│
-├── ml-service/
-│   ├── main.py
-│   ├── train_diabetes.py
-│   ├── train_chatbot.py
-│   ├── chatbot_analysis.py
-│   ├── chatbot_model_comparison.py
-│   ├── data/
-│   │   ├── medquad.csv
-|       ├── diabetes_prediction_dataset.csv
-|       ├── disease_specialist_dataset.csv
-|       ├── disease_symptom_and_patient_profile_dataset.csv
-|       └── heart_disease.csv
-│   ├── models/
-│   │   ├── diabetes_model.pkl
-│   │   └── chatbot_qa_model.pkl
-│   └── outputs/
-│
-└── README.md
+```txt
+izi-health/
+  frontend/
+    src/
+      assets/
+      components/
+      main.jsx
+      styles.css
+    package.json
+  backend/
+    prisma/
+      migrations/
+      schema.prisma
+    src/
+      lib/
+      routes/
+      seedFacilities.js
+      server.js
+    package.json
+  ml-service/
+    data/
+    models/
+    outputs/
+    main.py
+    requirements.txt
+    train_diabetes.py
+    train_chatbot_qa.py
+  docs/
+    API_SMOKE_TESTS.md
+    DEPLOYMENT.md
 ```
-## Project Structure
 
-You need to run three terminal at the same time: 
-1. Backend
+## Local Development
 
-cd backend
+Run the backend:
+
+```bash
+cd izi-health/backend
 npm install
 npm run dev
-Open at: http://localhost:4000
+```
 
-2. Frontend
+Run the frontend:
 
-cd frontend
+```bash
+cd izi-health/frontend
 npm install
 npm run dev
-Open at: http://localhost:5173 
+```
 
-3. ML service
+Run the ML service:
 
-cd ml-service
-venv\Scripts\activate
+```bash
+cd izi-health/ml-service
+pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
-Open at: http://localhost:8000 or http://localhost:8000/docs
+```
 
-## Admin Page
+## Environment Variables
 
-Email: admin@izihealth.rw
-Password: admin123
+Frontend:
 
-Open at: http://localhost:5173/admin
+```env
+VITE_API_URL=http://localhost:4000
+```
+
+Backend:
+
+```env
+PORT=4000
+DATABASE_URL=postgresql://...
+JWT_SECRET=replace-with-a-long-random-secret
+FRONTEND_URL=http://localhost:5173
+ML_SERVICE_URL=http://localhost:8000
+CHATBOT_TIMEOUT_MS=15000
+```
+
+## Deployment
+
+Deployment instructions are in:
+
+```txt
+izi-health/docs/DEPLOYMENT.md
+```
+
+Post-deployment API checks are in:
+
+```txt
+izi-health/docs/API_SMOKE_TESTS.md
+```
+
+## Medical Safety Boundary
+
+IZI Health provides care navigation and health education support only. It does not diagnose conditions, prescribe medication, or replace care from a qualified healthcare professional. Users should seek emergency care immediately for urgent symptoms such as chest pain, difficulty breathing, fainting, stroke-like symptoms, or severe bleeding.
+
+## Known Limitations
+
+- The admin dashboard is still partly prototype-level.
+- Some NCD views still use browser storage for display convenience and should be fully synchronized with backend APIs.
+- The ML chatbot can be slow on Render free plans because Sentence-BERT is heavy and services cold-start.
+- No automated test suite is fully wired yet; smoke-test instructions are provided.
+- Password reset, email verification, and fine-grained role permissions are not implemented yet.
