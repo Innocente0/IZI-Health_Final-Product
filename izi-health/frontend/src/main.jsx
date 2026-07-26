@@ -15,7 +15,7 @@ import "./styles.css";
 import Chatbot from "./components/Chatbot.jsx";
 import { KEY, currentUser, setStored } from "./config.js";
 import Admin from "./pages/Admin.jsx";
-import { Login, Register, VerifyEmail } from "./pages/AuthPages.jsx";
+import { Login, Register } from "./pages/AuthPages.jsx";
 import Facilities from "./pages/Facilities.jsx";
 import NCD from "./pages/NCD.jsx";
 import { About, Home } from "./pages/PublicPages.jsx";
@@ -48,7 +48,6 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login onLogin={login} />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/verify-email" element={<VerifyEmail onLogin={login} />} />
         <Route
           path="/facilities"
           element={

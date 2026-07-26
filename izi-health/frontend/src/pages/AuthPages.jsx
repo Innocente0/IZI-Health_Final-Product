@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, HeartPulse } from "lucide-react";
 import { API_URL } from "../config.js";
 
@@ -29,6 +29,7 @@ function PasswordInput({ placeholder, value, onChange }) {
 
 export function Login({ onLogin }) {
   const nav = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
@@ -85,6 +86,7 @@ export function Login({ onLogin }) {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
 
+        {location.state?.message && <p className="success">{location.state.message}</p>}
         {err && <p className="error">{err}</p>}
 
         <button className="primary full" type="submit" disabled={!canSubmit}>
@@ -100,6 +102,7 @@ export function Login({ onLogin }) {
 }
 
 export function Register() {
+  const nav = useNavigate();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -107,7 +110,6 @@ export function Register() {
     confirm: "",
   });
   const [err, setErr] = useState("");
-  const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
   const canSubmit =
     form.name.trim() &&
@@ -119,7 +121,6 @@ export function Register() {
   async function submit(e) {
     e.preventDefault();
     setErr("");
-    setNotice("");
 
     if (!canSubmit) return;
     if (form.password.trim().length < 8) {
@@ -149,7 +150,11 @@ export function Register() {
         throw new Error(data.message || "Registration failed.");
       }
 
-      setNotice(data.message || "Account created. Please check your email to verify your account.");
+      nav("/login", {
+        state: {
+          message: data.message || "Account created successfully. Please log in.",
+        },
+      });
     } catch (error) {
       console.error("Registration error:", error);
       setErr(error.message || "Could not register.");
@@ -191,8 +196,6 @@ export function Register() {
         />
 
         {err && <p className="error">{err}</p>}
-        {notice && <p className="success">{notice}</p>}
-
         <button className="primary full" type="submit" disabled={!canSubmit}>
           {loading ? "Registering..." : "Register"}
         </button>
@@ -201,51 +204,6 @@ export function Register() {
           Already have account? <Link to="/login">Login</Link>
         </p>
       </form>
-    </Auth>
-  );
-}
-
-export function VerifyEmail({ onLogin }) {
-  const [params] = useSearchParams();
-  const nav = useNavigate();
-  const [status, setStatus] = useState("Verifying your email...");
-  const [err, setErr] = useState("");
-
-  useEffect(() => {
-    async function verify() {
-      try {
-        const token = params.get("token");
-
-        if (!token) {
-          throw new Error("Verification token is missing.");
-        }
-
-        const response = await fetch(
-          `${API_URL}/api/auth/verify-email?token=${encodeURIComponent(token)}`
-        );
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Could not verify email.");
-        }
-
-        onLogin(data.user, data.token);
-        setStatus("Email verified. Taking you to your dashboard...");
-        setTimeout(() => nav("/ncd"), 900);
-      } catch (error) {
-        setErr(error.message || "Could not verify email.");
-      }
-    }
-
-    verify();
-  }, [nav, onLogin, params]);
-
-  return (
-    <Auth title="Verify email" subtitle="Confirming your IZI Health account">
-      {err ? <p className="error">{err}</p> : <p className="success">{status}</p>}
-      <p>
-        <Link to="/login">Back to login</Link>
-      </p>
     </Auth>
   );
 }
