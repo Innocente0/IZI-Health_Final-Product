@@ -18,12 +18,14 @@ async function main() {
       name,
       password: await bcrypt.hash(password, 10),
       role: "ADMIN",
+      emailVerified: true,
     },
     create: {
       name,
       email,
       password: await bcrypt.hash(password, 10),
       role: "ADMIN",
+      emailVerified: true,
     },
   });
 
