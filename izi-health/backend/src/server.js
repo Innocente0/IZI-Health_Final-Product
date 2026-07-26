@@ -286,7 +286,7 @@ app.post("/api/health-logs", authenticate, async (req, res) => {
           ),
         },
         {
-          timeout: 60000,
+          timeout: Number(process.env.DIABETES_TIMEOUT_MS || 180000),
           headers: {
             "Content-Type": "application/json",
           },
