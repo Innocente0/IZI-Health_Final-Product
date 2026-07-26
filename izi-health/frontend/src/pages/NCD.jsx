@@ -60,6 +60,22 @@ function userKey(k, u) {
   return k + "_" + u.email;
 }
 
+function getPrediction(log) {
+  if (!log) return null;
+  if (log.prediction && typeof log.prediction === "object") return log.prediction;
+
+  if (log.riskLevel || log.recommendation || log.probability !== undefined) {
+    return {
+      prediction: log.prediction,
+      riskLevel: log.riskLevel,
+      recommendation: log.recommendation,
+      probability: log.probability,
+    };
+  }
+
+  return null;
+}
+
 function NCDDashboard({ user, setTab }) {
   const logs = get(userKey(KEY.logs, user), []);
   const meds = get(userKey(KEY.meds, user), []);
@@ -84,7 +100,7 @@ function NCDDashboard({ user, setTab }) {
   const nextReminder = rems[0];
   const lastChat = chats[chats.length - 1];
 
-  const latestPrediction = latestLog?.prediction;
+  const latestPrediction = getPrediction(latestLog);
 
   const risk = latestPrediction
     ? {
@@ -181,7 +197,7 @@ function NCDDashboard({ user, setTab }) {
                 <small>{log.date} {log.time} • {log.meal}</small>
               </div>
 
-              <span>{log.prediction?.riskLevel || "No prediction"}</span>
+              <span>{getPrediction(log)?.riskLevel || "No prediction"}</span>
             </div>
           ))}
         </div>
@@ -404,7 +420,7 @@ function Glucose({ user }) {
   }
 
   function showRiskNotification(savedLog) {
-    const risk = savedLog.prediction?.riskLevel;
+    const risk = getPrediction(savedLog)?.riskLevel;
     const glucose = Number(savedLog.glucose);
 
     if (risk === "High Risk" || glucose >= 200) {
@@ -447,6 +463,11 @@ function Glucose({ user }) {
 );  // Added new line for deployment
 
       const savedFromBackend = await response.json();
+
+      if (!response.ok) {
+        throw new Error(savedFromBackend.message || "Could not save log.");
+      }
+
       const engineered = buildEngineeredFeatures(logs, savedFromBackend);
 
       const savedLog = {
@@ -624,7 +645,7 @@ function Glucose({ user }) {
                 {log.engineered && <small>7-day Avg: {log.engineered.sevenDayAverage} mg/dL • Spikes: {log.engineered.highSpikes}</small>}
               </div>
 
-              <span className="riskPill">{log.prediction?.riskLevel || "No prediction"}</span>
+              <span className="riskPill">{getPrediction(log)?.riskLevel || "No prediction"}</span>
 
               <button type="button" onClick={() => deleteLog(log.id)} className="deleteLogBtn" title="Delete this log">
                 ×
@@ -999,10 +1020,12 @@ function riskLevel(logs){
 
   const latest = logs[0];
 
-  if(latest.prediction){
+  const prediction = getPrediction(latest);
+
+  if(prediction){
     return {
-      level: latest.prediction.riskLevel || 'Unknown',
-      msg: latest.prediction.recommendation || 'Review your latest reading'
+      level: prediction.riskLevel || 'Unknown',
+      msg: prediction.recommendation || 'Review your latest reading'
     };
   }
 
@@ -1018,7 +1041,7 @@ function Warning({ compact, user }) {
 
   const logs = user ? get(userKey(KEY.logs, user), []) : [];
   const latestLog = logs[0];
-  const prediction = latestLog?.prediction;
+  const prediction = getPrediction(latestLog);
 
   const riskLevelText = prediction?.riskLevel || "No ML prediction yet";
   const recommendation =
@@ -1148,7 +1171,7 @@ function WeeklyReport({ user }) {
   const lowest = values.length ? Math.min(...values) : 0;
 
   const latest = logs[0];
-  const risk = latest?.prediction?.riskLevel || "No prediction yet";
+  const risk = getPrediction(latest)?.riskLevel || "No prediction yet";
 
   const trend =
     values.length < 2
@@ -1197,7 +1220,7 @@ function WeeklyReport({ user }) {
               <b>{log.glucose} mg/dL</b>
               <small>{log.date} {log.time} • {log.meal}</small>
             </div>
-            <span>{log.prediction?.riskLevel || "No prediction"}</span>
+            <span>{getPrediction(log)?.riskLevel || "No prediction"}</span>
           </div>
         ))}
 
@@ -1207,4 +1230,4 @@ function WeeklyReport({ user }) {
   );
 }
 
-function UserSettings(){const[s,setS]=useState(get(KEY.settings,{reminders:true,reports:true,chat:true,alerts:true,dark:false}));function tog(k){const n={...s,[k]:!s[k]};setS(n);set(KEY.settings,n)}return <div><h1>Settings</h1><div className="panel">{Object.keys(s).map(k=><label className="switch" key={k}>{k.replace(/\b\w/g,c=>c.toUpperCase())}<input type="checkbox" checked={s[k]} onChange={()=>tog(k)}/></label>)}</div></div>}
+function UserSettings(){const allowed={reminders:true,reports:true,chat:true,alerts:true,dark:false};const[s,setS]=useState(()=>({...allowed,...Object.fromEntries(Object.entries(get(KEY.settings,{})).filter(([k])=>k in allowed))}));function tog(k){const n={...s,[k]:!s[k]};setS(n);set(KEY.settings,n)}return <div><h1>Settings</h1><div className="panel">{Object.keys(allowed).map(k=><label className="switch" key={k}>{k.replace(/\b\w/g,c=>c.toUpperCase())}<input type="checkbox" checked={s[k]} onChange={()=>tog(k)}/></label>)}</div></div>}

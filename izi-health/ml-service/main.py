@@ -1,12 +1,8 @@
 import os
 from threading import Lock
 
-import joblib
-import numpy as np
-import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from sentence_transformers import SentenceTransformer
 
 
 # Application setup
@@ -34,50 +30,38 @@ MEDQUAD_EMBEDDINGS_PATH = os.path.join(
 )
 
 
-# Load lightweight local files
+# Validate local files
 
 if not os.path.exists(DIABETES_MODEL_PATH):
     raise FileNotFoundError(
         f"Diabetes model not found: {DIABETES_MODEL_PATH}"
     )
 
-if not os.path.exists(MEDQUAD_CSV_PATH):
-    raise FileNotFoundError(
-        f"MedQuAD CSV file not found: {MEDQUAD_CSV_PATH}"
-    )
-
-if not os.path.exists(MEDQUAD_EMBEDDINGS_PATH):
-    raise FileNotFoundError(
-        "MedQuAD embeddings file not found. Expected file at: "
-        f"{MEDQUAD_EMBEDDINGS_PATH}"
-    )
-
-
-diabetes_model = joblib.load(DIABETES_MODEL_PATH)
-
-medquad_df = pd.read_csv(MEDQUAD_CSV_PATH)
-medquad_df = medquad_df.dropna(
-    subset=["question", "answer"]
-).reset_index(drop=True)
-
-medquad_embeddings = np.load(
-    MEDQUAD_EMBEDDINGS_PATH,
-    mmap_mode="r",
-)
-
-if len(medquad_embeddings) != len(medquad_df):
-    raise ValueError(
-        "The number of saved MedQuAD embeddings does not match "
-        "the number of valid rows in medquad.csv. "
-        f"Embeddings: {len(medquad_embeddings)}, "
-        f"CSV rows: {len(medquad_df)}."
-    )
-
 
 # Load Sentence-BERT only when the chatbot is first used.
 # This lets FastAPI open its Render port before loading the larger model.
+diabetes_model = None
+diabetes_lock = Lock()
+medquad_df = None
+medquad_embeddings = None
+medquad_lock = Lock()
 sbert_model = None
 sbert_lock = Lock()
+
+
+def get_diabetes_model():
+    global diabetes_model
+
+    if diabetes_model is None:
+        with diabetes_lock:
+            if diabetes_model is None:
+                print("Loading diabetes model...")
+                import joblib
+
+                diabetes_model = joblib.load(DIABETES_MODEL_PATH)
+                print("Diabetes model loaded successfully.")
+
+    return diabetes_model
 
 
 def get_sbert_model():
@@ -86,6 +70,8 @@ def get_sbert_model():
     if sbert_model is None:
         with sbert_lock:
             if sbert_model is None:
+                from sentence_transformers import SentenceTransformer
+
                 print("Loading Sentence-BERT model...")
                 sbert_model = SentenceTransformer(
                     "all-MiniLM-L6-v2",
@@ -94,6 +80,52 @@ def get_sbert_model():
                 print("Sentence-BERT model loaded successfully.")
 
     return sbert_model
+
+
+def get_medquad_data():
+    global medquad_df, medquad_embeddings
+
+    if medquad_df is None or medquad_embeddings is None:
+        with medquad_lock:
+            if medquad_df is None or medquad_embeddings is None:
+                if not os.path.exists(MEDQUAD_CSV_PATH):
+                    raise FileNotFoundError(
+                        f"MedQuAD CSV file not found: {MEDQUAD_CSV_PATH}"
+                    )
+
+                if not os.path.exists(MEDQUAD_EMBEDDINGS_PATH):
+                    raise FileNotFoundError(
+                        "MedQuAD embeddings file not found. Expected file at: "
+                        f"{MEDQUAD_EMBEDDINGS_PATH}"
+                    )
+
+                print("Loading MedQuAD data...")
+                import numpy as np
+                import pandas as pd
+
+                loaded_df = pd.read_csv(MEDQUAD_CSV_PATH)
+                loaded_df = loaded_df.dropna(
+                    subset=["question", "answer"]
+                ).reset_index(drop=True)
+
+                loaded_embeddings = np.load(
+                    MEDQUAD_EMBEDDINGS_PATH,
+                    mmap_mode="r",
+                )
+
+                if len(loaded_embeddings) != len(loaded_df):
+                    raise ValueError(
+                        "The number of saved MedQuAD embeddings does not match "
+                        "the number of valid rows in medquad.csv. "
+                        f"Embeddings: {len(loaded_embeddings)}, "
+                        f"CSV rows: {len(loaded_df)}."
+                    )
+
+                medquad_df = loaded_df
+                medquad_embeddings = loaded_embeddings
+                print("MedQuAD data loaded successfully.")
+
+    return medquad_df, medquad_embeddings
 
 
 # Request models
@@ -127,8 +159,11 @@ def health():
     return {
         "status": "healthy",
         "diabetesModelLoaded": diabetes_model is not None,
-        "medquadDataLoaded": len(medquad_df) > 0,
+        "diabetesModelAvailable": os.path.exists(DIABETES_MODEL_PATH),
+        "medquadDataLoaded": medquad_df is not None,
+        "medquadDataAvailable": os.path.exists(MEDQUAD_CSV_PATH),
         "medquadEmbeddingsLoaded": medquad_embeddings is not None,
+        "medquadEmbeddingsAvailable": os.path.exists(MEDQUAD_EMBEDDINGS_PATH),
         "chatbotModelLoaded": sbert_model is not None,
     }
 
@@ -138,15 +173,18 @@ def health():
 @app.post("/predict-diabetes")
 def predict_diabetes(data: DiabetesInput):
     try:
+        import pandas as pd
+
+        model = get_diabetes_model()
         input_df = pd.DataFrame([data.model_dump()])
 
-        prediction = diabetes_model.predict(input_df)[0]
+        prediction = model.predict(input_df)[0]
 
         probability = None
 
-        if hasattr(diabetes_model, "predict_proba"):
+        if hasattr(model, "predict_proba"):
             probability = float(
-                diabetes_model.predict_proba(input_df)[0][1]
+                model.predict_proba(input_df)[0][1]
             )
 
         if prediction == 1:
@@ -251,6 +289,9 @@ def chatbot_qa(data: ChatbotQuestion):
         )
 
     try:
+        import numpy as np
+
+        medquad_df, medquad_embeddings = get_medquad_data()
         model = get_sbert_model()
 
         query_embedding = model.encode(

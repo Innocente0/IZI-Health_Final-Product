@@ -546,6 +546,87 @@ button:disabled,
   font-size: 12px;
 }
 
+.policyAccept {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  color: #3d4267;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.policyAccept input {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  accent-color: var(--p);
+}
+
+.policyLink {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--p);
+  font-weight: 800;
+}
+
+.policyLink:hover {
+  color: #4e28b8;
+}
+
+.policyModal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(7, 11, 52, 0.38);
+}
+
+.policyModalBox {
+  position: relative;
+  width: min(900px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  overflow-y: auto;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 24px 70px rgba(20, 33, 75, 0.25);
+}
+
+.policyClose {
+  position: sticky;
+  top: 0;
+  float: right;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: #f0e9ff;
+  color: var(--p);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.policyPage {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.policyPage .panel {
+  margin: 18px 0;
+}
+
+.policyPage h2 {
+  color: var(--p);
+  margin-top: 0;
+}
+
 .error {
   color: #d21b44;
 }
