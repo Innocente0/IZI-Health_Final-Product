@@ -5,9 +5,7 @@ const cors = require("cors");
 const http = require("http");
 const axios = require("axios");
 const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
 
 const prisma = require("./lib/prisma");
 const chatRoutes = require("./routes/chatRoutes");
@@ -20,10 +18,6 @@ const PORT = process.env.PORT || 4000;
 const ML_SERVICE_URL =
   process.env.ML_SERVICE_URL || "http://localhost:8000";
 const JWT_SECRET = process.env.JWT_SECRET || "izi_health_secret";
-const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:5173")
-  .split(",")[0]
-  .trim()
-  .replace(/\/$/, "");
 
 const allowedOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
@@ -64,44 +58,6 @@ function signToken(user) {
       expiresIn: "7d",
     }
   );
-}
-
-function createEmailTransporter() {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: String(process.env.SMTP_SECURE || "false") === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-}
-
-async function sendVerificationEmail(user, token) {
-  const transporter = createEmailTransporter();
-  const verificationUrl = `${FRONTEND_URL}/verify-email?token=${token}`;
-
-  if (!transporter) {
-    console.warn(
-      `Email verification is not configured. Verification link for ${user.email}: ${verificationUrl}`
-    );
-    return false;
-  }
-
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
-    to: user.email,
-    subject: "Verify your IZI Health account",
-    text: `Hi ${user.name},\n\nPlease verify your IZI Health account by opening this link:\n${verificationUrl}\n\nIf you did not create this account, you can ignore this email.`,
-    html: `<p>Hi ${user.name},</p><p>Please verify your IZI Health account by clicking the link below:</p><p><a href="${verificationUrl}">Verify my account</a></p><p>If you did not create this account, you can ignore this email.</p>`,
-  });
-
-  return true;
 }
 
 function authenticate(req, res, next) {
@@ -180,80 +136,25 @@ app.post("/api/auth/register", async (req, res) => {
       });
     }
 
-    const emailVerificationToken = crypto.randomBytes(32).toString("hex");
-    const emailVerificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
         email: normalizedEmail,
         password: await bcrypt.hash(normalizedPassword, 10),
         role: "USER",
-        emailVerificationToken,
-        emailVerificationExpiresAt,
+        emailVerified: true,
       },
     });
 
-    const emailSent = await sendVerificationEmail(user, emailVerificationToken);
-
     return res.status(201).json({
       user: toSafeUser(user),
-      message: emailSent
-        ? "Account created. Please check your email to verify your account before logging in."
-        : "Account created, but email sending is not configured. Ask the administrator for the verification link.",
+      message: "Account created successfully. Please log in.",
     });
   } catch (error) {
     console.error("Registration error:", error);
 
     return res.status(500).json({
       message: "Could not register user.",
-    });
-  }
-});
-
-app.get("/api/auth/verify-email", async (req, res) => {
-  try {
-    const token = String(req.query.token || "");
-
-    if (!token) {
-      return res.status(400).json({
-        message: "Verification token is required.",
-      });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: {
-        emailVerificationToken: token,
-      },
-    });
-
-    if (!user || !user.emailVerificationExpiresAt || user.emailVerificationExpiresAt < new Date()) {
-      return res.status(400).json({
-        message: "Verification link is invalid or expired.",
-      });
-    }
-
-    const verifiedUser = await prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        emailVerified: true,
-        emailVerificationToken: null,
-        emailVerificationExpiresAt: null,
-      },
-    });
-
-    return res.json({
-      token: signToken(verifiedUser),
-      user: toSafeUser(verifiedUser),
-      message: "Email verified successfully.",
-    });
-  } catch (error) {
-    console.error("Email verification error:", error);
-
-    return res.status(500).json({
-      message: "Could not verify email.",
     });
   }
 });
@@ -285,12 +186,6 @@ app.post("/api/auth/login", async (req, res) => {
     if (!passwordMatches) {
       return res.status(401).json({
         message: "Invalid email or password.",
-      });
-    }
-
-    if (!user.emailVerified) {
-      return res.status(403).json({
-        message: "Please verify your email before logging in.",
       });
     }
 
