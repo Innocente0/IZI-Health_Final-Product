@@ -1,0 +1,7 @@
+Metric,Value
+Queries,500.0
+Mean (ms),39.58560423799463
+Median (ms),36.95869749981284
+Minimum (ms),26.517096000134188
+Maximum (ms),51.76905999996961
+95th percentile (ms),47.980844249991605

@@ -1,0 +1,46 @@
+{
+    "project": "IZI Health Diabetes Prediction",
+    "target": "diabetes",
+    "features": [
+        "gender",
+        "smoking_history",
+        "age",
+        "hypertension",
+        "heart_disease",
+        "bmi",
+        "HbA1c_level",
+        "blood_glucose_level"
+    ],
+    "categorical_features": [
+        "gender",
+        "smoking_history"
+    ],
+    "numeric_features": [
+        "age",
+        "hypertension",
+        "heart_disease",
+        "bmi",
+        "HbA1c_level",
+        "blood_glucose_level"
+    ],
+    "model_type": "RandomForestClassifier inside sklearn Pipeline",
+    "best_hyperparameters": {
+        "classifier__max_depth": null,
+        "classifier__max_features": 0.7,
+        "classifier__min_samples_leaf": 1,
+        "classifier__min_samples_split": 2,
+        "classifier__n_estimators": 200
+    },
+    "training_records_final": 85000,
+    "testing_records": 15000,
+    "metrics": {
+        "Accuracy": 0.9693333333333334,
+        "Precision": 0.9492833517089305,
+        "Recall": 0.6752941176470588,
+        "F1-score": 0.7891842346471127,
+        "ROC-AUC": 0.9659330404657308,
+        "Average Precision": 0.8563506637478148
+    },
+    "positive_class_prevalence": 0.085,
+    "default_probability_threshold": 0.5
+}

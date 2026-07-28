@@ -1,0 +1,15 @@
+,precision,recall,f1-score,support
+Laron syndrome,1.0,1.0,1.0,3.0
+Adult Central Nervous System Tumors,1.0,1.0,1.0,3.0
+Colorectal Cancer,1.0,1.0,1.0,3.0
+Alzheimer's Disease,1.0,1.0,1.0,3.0
+Renal Tubular Acidosis,1.0,1.0,1.0,2.0
+ALG6-congenital disorder of glycosylation,1.0,1.0,1.0,2.0
+Anxiety Disorders,1.0,1.0,1.0,2.0
+Hearing Loss,1.0,0.5,0.6666666666666666,2.0
+Parasites - Babesiosis,1.0,1.0,1.0,2.0
+LCHAD deficiency,0.6666666666666666,1.0,0.8,2.0
+Other,0.9978991596638656,0.9978991596638656,0.9978991596638656,476.0
+accuracy,0.996,0.996,0.996,0.996
+macro avg,0.9695059842118664,0.9543544690603515,0.9513241660300483,500.0
+weighted avg,0.9966666666666666,0.996,0.9958666666666667,500.0

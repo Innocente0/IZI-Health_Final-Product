@@ -1,0 +1,8 @@
+Metric,Value
+Records,100000.0
+Features,8.0
+Diabetic records,8500.0
+Non-diabetic records,91500.0
+Diabetes prevalence (%),8.5
+Duplicate records,3854.0
+Missing values,0.0

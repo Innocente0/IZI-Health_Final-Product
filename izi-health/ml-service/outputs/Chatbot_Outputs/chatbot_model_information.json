@@ -1,0 +1,15 @@
+{
+    "project": "IZI Health Chatbot",
+    "deployment_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "embedding_source_column": "question",
+    "embedding_dimension": 384,
+    "normalization": true,
+    "similarity_method": "dot product of normalized vectors (cosine similarity)",
+    "confidence_threshold": 0.55,
+    "valid_dataset_rows": 16407,
+    "top1_accuracy_percent": 67.0,
+    "top3_accuracy_percent": 86.2,
+    "top5_accuracy_percent": 90.0,
+    "mrr": 0.7666,
+    "average_response_time_ms": 17.958385987999126
+}

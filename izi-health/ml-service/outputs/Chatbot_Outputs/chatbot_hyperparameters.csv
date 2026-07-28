@@ -1,0 +1,5 @@
+Model,Key hyperparameters,Purpose
+CountVectorizer + Cosine,"stop_words='english', max_features=10000, ngram_range=(1,2)",Lexical baseline
+TF-IDF + Cosine,"stop_words='english', max_features=10000, ngram_range=(1,2)",Weighted lexical baseline
+Sentence-BERT MiniLM,"all-MiniLM-L6-v2, normalized embeddings, batch_size=64",Deployment semantic model
+Sentence-BERT MPNet,"all-mpnet-base-v2, normalized embeddings, batch_size=32",Higher-capacity comparison
