@@ -14,24 +14,26 @@ export default function NCD({user}) {
         <h2><HeartPulse/> NCD Support</h2>
         <p>Diabetes care support</p>
 
-        {[
-          ['dashboard', HomeIcon, 'Dashboard'],
-          ['glucose', Droplet, 'Blood Glucose Log'],
-          ['meds', Pill, 'Medications'],
-          ['reminders', Bell, 'Reminders'],
-          ['warning', AlertTriangle, 'Warning Signs'],
-          ['report', BarChart3, 'Weekly Report'],
-          ['education', BookOpen, 'Education'],
-          ['settings', Settings, 'Settings']
-        ].map(([id, Icon, label]) => (
-          <button
-            className={tab === id ? 'sel' : ''}
-            onClick={() => setTab(id)}
-            key={id}
-          >
-            <Icon size={18}/>{label}
-          </button>
-        ))}
+        <div className="ncdTabs">
+          {[
+            ['dashboard', HomeIcon, 'Dashboard'],
+            ['glucose', Droplet, 'Blood Glucose Log'],
+            ['meds', Pill, 'Medications'],
+            ['reminders', Bell, 'Reminders'],
+            ['warning', AlertTriangle, 'Warning Signs'],
+            ['report', BarChart3, 'Weekly Report'],
+            ['education', BookOpen, 'Education'],
+            ['settings', Settings, 'Settings']
+          ].map(([id, Icon, label]) => (
+            <button
+              className={tab === id ? 'sel' : ''}
+              onClick={() => setTab(id)}
+              key={id}
+            >
+              <Icon size={18}/>{label}
+            </button>
+          ))}
+        </div>
 
         <div className="guidance">
           <MessageCircle/>Need guidance?

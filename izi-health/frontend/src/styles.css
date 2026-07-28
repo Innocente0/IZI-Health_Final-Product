@@ -90,7 +90,12 @@ button {
   transition: background 0.18s ease, color 0.18s ease;
 }
 
-.links a:hover {
+.links svg {
+  display: none;
+}
+
+.links a:hover,
+.links a.active {
   background: #f0e9ff;
   color: var(--p);
 }
@@ -1792,6 +1797,11 @@ td {
   cursor: pointer;
 }
 
+.ncdTabs {
+  display: grid;
+  gap: 8px;
+}
+
 .symptomChip:hover {
   background: #f0e9ff;
   color: var(--p);
@@ -2226,4 +2236,718 @@ td {
 .safetyNotice svg {
   flex: 0 0 auto;
   margin-top: 1px;
+}
+
+/* ===== DEVICE RESPONSIVENESS OVERRIDES ===== */
+html,
+body,
+#root {
+  min-width: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+.mobileMenuBtn {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  .cards4,
+  .dashCards,
+  .educationGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quality,
+  .grid2,
+  .glucoseLayout,
+  .medsLayout,
+  .reminderLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .ncdPage {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .summaryBoxes,
+  .logSummary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1000px) {
+  .nav {
+    height: auto;
+    min-height: 76px;
+    padding: 14px 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .brand b {
+    font-size: 22px;
+  }
+
+  .brand span {
+    font-size: 11px;
+  }
+
+  .logo {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+  }
+
+  .mobileMenuBtn {
+    order: 2;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    margin-left: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: white;
+    color: var(--p);
+    box-shadow: none;
+  }
+
+  .links {
+    order: 4;
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .links.open {
+    display: flex;
+  }
+
+  .links a {
+    width: 100%;
+    padding: 12px 10px;
+  }
+
+  .auth {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 900px) {
+  .section,
+  .page {
+    padding: 36px 22px;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: 48px 24px;
+    background-position: center;
+  }
+
+  .hero h1 {
+    max-width: 100%;
+    font-size: 40px;
+  }
+
+  .hero p,
+  .lead {
+    font-size: 16px;
+  }
+
+  .heroActions {
+    gap: 10px;
+  }
+
+  .big {
+    width: 100%;
+    padding: 16px 18px;
+  }
+
+  .cards4,
+  .dashCards,
+  .educationGrid,
+  .quickActions,
+  .summaryBoxes,
+  .logSummary,
+  .formGrid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .ncdPage,
+  .adminPage {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .ncdSide {
+    position: static;
+    max-height: none;
+  }
+
+  .ncdSide button {
+    min-height: 44px;
+  }
+
+  .ncdContent {
+    padding: 0;
+  }
+
+  .authPage {
+    min-height: calc(100vh - 76px);
+    padding: 24px 16px;
+  }
+
+  .authCard {
+    width: 100%;
+    max-width: 460px;
+    padding: 26px 20px;
+  }
+
+  .policyModal {
+    padding: 12px;
+  }
+
+  .policyModalBox {
+    max-height: calc(100vh - 24px);
+    padding: 22px 16px;
+  }
+
+  .medCardClean,
+  .reminderCardClean,
+  .glucoseLogCard {
+    grid-template-columns: 1fr;
+  }
+
+  .medTimeClean,
+  .reminderTimeClean,
+  .medMoreBtn {
+    grid-column: auto;
+  }
+
+  .chartArea,
+  .tableWrap,
+  .adminTable,
+  table {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .chartPlot {
+    min-width: 520px;
+  }
+}
+
+@media (max-width: 520px) {
+  .nav {
+    padding: 12px 14px;
+  }
+
+  .brand b {
+    font-size: 20px;
+  }
+
+  .brand span {
+    display: none;
+  }
+
+  .auth .primary,
+  .auth .outline,
+  .auth button,
+  .auth .chip {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .hero {
+    padding: 38px 18px;
+  }
+
+  .hero h1 {
+    font-size: 32px;
+    line-height: 1.18;
+  }
+
+  .section,
+  .page {
+    padding: 28px 16px;
+  }
+
+  .section h2 {
+    font-size: 24px;
+  }
+
+  .quality,
+  .info {
+    min-height: auto;
+    padding: 22px;
+  }
+
+  .hospitalArt {
+    height: 190px;
+  }
+
+  .stats {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wideSearch {
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .facilityPage {
+    padding: 18px 12px;
+  }
+
+  .facilityHero {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .facilityHero h1 {
+    font-size: 26px;
+  }
+
+  .facilityList {
+    padding: 10px;
+  }
+
+  .facilityCard {
+    padding: 12px;
+  }
+
+  .profile {
+    top: 82px;
+    right: 8px;
+    bottom: 12px;
+    left: 8px;
+  }
+
+  .chat {
+    top: 86px;
+    right: 8px;
+    width: calc(100vw - 16px);
+  }
+
+  .chatBtn {
+    width: 54px;
+    height: 54px;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    padding-bottom: calc(74px + env(safe-area-inset-bottom));
+  }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    min-height: 64px;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .mobileMenuBtn {
+    display: none;
+  }
+
+  .auth {
+    order: 2;
+    width: auto;
+    margin-left: auto;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .auth .primary,
+  .auth .outline,
+  .auth button,
+  .auth .chip {
+    flex: 0 1 auto;
+  }
+
+  .auth .primary,
+  .auth .outline,
+  .auth button {
+    min-height: 38px;
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .auth .chip {
+    max-width: 92px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .links,
+  .links.open {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 60;
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 -10px 30px rgba(31, 18, 68, 0.08);
+  }
+
+  .links:has(a:nth-child(5)) {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .links a {
+    min-width: 0;
+    min-height: 56px;
+    padding: 7px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 12px;
+    color: #6d637d;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .links svg {
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .links a:hover,
+  .links a.active {
+    background: #f0e9ff;
+    color: var(--p);
+  }
+
+  .chatBtn {
+    bottom: calc(86px + env(safe-area-inset-bottom));
+  }
+
+  .chat {
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    max-height: calc(100vh - 168px);
+  }
+
+  .hero,
+  .authPage,
+  .facilityPage,
+  .ncdPage,
+  .adminPage {
+    scroll-margin-bottom: 86px;
+  }
+}
+
+@media (max-width: 390px) {
+  .brand b {
+    font-size: 18px;
+  }
+
+  .auth .primary,
+  .auth .outline,
+  .auth button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .links a {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .ncdPage {
+    display: block;
+    padding: 12px 12px 92px;
+  }
+
+  .ncdSide {
+    position: sticky;
+    top: 64px;
+    z-index: 35;
+    min-height: 0;
+    max-height: none;
+    padding: 12px;
+    border-radius: 14px;
+    margin-bottom: 14px;
+  }
+
+  .ncdSide h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .ncdSide p,
+  .ncdSide .guidance {
+    display: none;
+  }
+
+  .ncdSide {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .ncdTabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+  }
+
+  .ncdTabs button {
+    flex: 0 0 auto;
+    min-height: 42px;
+    width: auto;
+    padding: 10px 12px;
+    border-radius: 999px;
+    border-left: 0;
+    white-space: nowrap;
+  }
+
+  .ncdTabs button.sel {
+    border-left: 0;
+    box-shadow: inset 0 0 0 1px rgba(124, 76, 232, 0.25);
+  }
+
+  .ncdContent {
+    min-width: 0;
+    padding: 0;
+  }
+
+  .ncdContent h1 {
+    font-size: 28px;
+    line-height: 1.18;
+    margin: 10px 0 8px;
+  }
+
+  .ncdContent h2 {
+    font-size: 20px;
+  }
+
+  .panel,
+  .metric,
+  .cta,
+  .glucoseSavedPanel,
+  .medListPanel,
+  .reminderListPanel {
+    min-width: 0;
+    border-radius: 14px;
+  }
+
+  .panel,
+  .medForm,
+  .reminderForm,
+  .medListPanel,
+  .reminderListPanel {
+    padding: 18px;
+  }
+
+  .between {
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .between > button,
+  .between .outline {
+    flex: 0 0 auto;
+  }
+
+  .dashCards,
+  .quickActions,
+  .grid2,
+  .glucoseLayout,
+  .medsLayout,
+  .reminderLayout,
+  .educationGrid,
+  .summaryBoxes,
+  .logSummary,
+  .formGrid2 {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .quickActions button {
+    min-height: 52px;
+    justify-content: center;
+  }
+
+  .chartArea {
+    height: 230px;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .chartPlot {
+    min-width: 390px;
+    height: 200px;
+  }
+
+  .targetLabel {
+    right: 6px;
+    font-size: 10px;
+  }
+
+  .barValue,
+  .xDate {
+    font-size: 10px;
+  }
+
+  .glucoseLogCard {
+    position: relative;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 16px 44px 16px 16px;
+  }
+
+  .glucoseLogCard small {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  .riskPill {
+    width: fit-content;
+  }
+
+  .deleteLogBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+
+  .medCardClean,
+  .reminderCardClean {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .medIconClean {
+    width: 48px;
+    height: 48px;
+  }
+
+  .medInfoClean,
+  .reminderCardClean > div {
+    min-width: 0;
+  }
+
+  .medInfoClean h3,
+  .reminderCardClean h3 {
+    font-size: 17px;
+    overflow-wrap: anywhere;
+  }
+
+  .medTimeClean,
+  .reminderTimeClean,
+  .medMoreBtn {
+    grid-column: 2;
+  }
+
+  .medMoreBtn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .warnItem {
+    min-height: 48px;
+    text-align: left;
+  }
+
+  .educationCard {
+    min-height: 0;
+    padding: 18px;
+    text-align: left;
+  }
+
+  .modal {
+    padding: 14px;
+  }
+
+  .modalBox {
+    width: min(100%, 420px);
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+  }
+}
+
+@media (max-width: 430px) {
+  .ncdPage {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .ncdSide {
+    top: 60px;
+    margin-right: -10px;
+    margin-left: -10px;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  .ncdSide h2 {
+    padding-left: 4px;
+  }
+
+  .ncdSide button {
+    font-size: 13px;
+  }
+
+  .ncdContent h1 {
+    font-size: 25px;
+  }
+
+  .panel,
+  .medForm,
+  .reminderForm,
+  .medListPanel,
+  .reminderListPanel {
+    padding: 15px;
+  }
+
+  .chartPlot {
+    min-width: 340px;
+  }
+
+  .summaryBoxes div,
+  .logSummary div {
+    padding: 13px;
+  }
 }

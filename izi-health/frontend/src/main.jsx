@@ -9,7 +9,17 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { HeartPulse, LogOut } from "lucide-react";
+import {
+  Activity,
+  Building2,
+  HeartPulse,
+  Home as HomeIcon,
+  Info,
+  LogOut,
+  Menu,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 
 import "./styles.css";
 import Chatbot from "./components/Chatbot.jsx";
@@ -95,9 +105,12 @@ function Protected({ user, children, adminOnly = false }) {
 }
 
 function Navbar({ user, logout }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <div className="nav">
-      <Link to="/" className="brand">
+      <Link to="/" className="brand" onClick={closeMenu}>
         <div className="logo">
           <HeartPulse size={28} />
         </div>
@@ -107,19 +120,45 @@ function Navbar({ user, logout }) {
         </div>
       </Link>
 
-      <div className="links">
-        <Link to="/">Home</Link>
-        <Link to="/facilities">Facilities</Link>
-        <Link to="/ncd">NCD Support</Link>
-        <Link to="/about">About Us</Link>
-        {user?.role === "ADMIN" && <Link to="/admin">Admin</Link>}
+      <button
+        type="button"
+        className="mobileMenuBtn"
+        onClick={() => setMenuOpen(!menuOpen)}
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
+      >
+        {menuOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
+
+      <div className={menuOpen ? "links open" : "links"}>
+        <NavLink to="/" onClick={closeMenu}>
+          <HomeIcon size={18} />
+          <span>Home</span>
+        </NavLink>
+        <NavLink to="/facilities" onClick={closeMenu}>
+          <Building2 size={18} />
+          <span>Facilities</span>
+        </NavLink>
+        <NavLink to="/ncd" onClick={closeMenu}>
+          <Activity size={18} />
+          <span>NCD</span>
+        </NavLink>
+        <NavLink to="/about" onClick={closeMenu}>
+          <Info size={18} />
+          <span>About</span>
+        </NavLink>
+        {user?.role === "ADMIN" && (
+          <NavLink to="/admin" onClick={closeMenu}>
+            <ShieldCheck size={18} />
+            <span>Admin</span>
+          </NavLink>
+        )}
       </div>
 
       <div className="auth">
         {user ? (
           <>
             <span className="chip">Hi, {user.name.split(" ")[0]}</span>
-            <button onClick={logout} className="outline">
+            <button onClick={() => { logout(); closeMenu(); }} className="outline">
               <LogOut size={16} />
               Logout
             </button>
@@ -129,12 +168,14 @@ function Navbar({ user, logout }) {
             <NavLink
               to="/login"
               className={({ isActive }) => `outline ${isActive ? "authActive" : ""}`}
+              onClick={closeMenu}
             >
               Login
             </NavLink>
             <NavLink
               to="/register"
               className={({ isActive }) => `primary ${isActive ? "authActive" : ""}`}
+              onClick={closeMenu}
             >
               Register
             </NavLink>
