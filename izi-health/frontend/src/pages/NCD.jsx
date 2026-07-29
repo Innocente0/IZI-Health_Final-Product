@@ -78,13 +78,71 @@ function getPrediction(log) {
   return null;
 }
 
+function logGlucose(log) {
+  const value =
+    log?.glucose ??
+    log?.bloodGlucoseLevel ??
+    log?.blood_glucose_level ??
+    log?.blood_glucose;
+
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function logDate(log) {
+  const rawDate = log?.date || log?.createdAt || log?.created_at;
+  if (!rawDate) return "No date";
+
+  const parsed = new Date(rawDate);
+  if (Number.isNaN(parsed.getTime())) return String(rawDate);
+
+  return parsed.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function logTime(log) {
+  if (log?.time) return log.time;
+
+  const rawDate = log?.createdAt || log?.created_at;
+  if (!rawDate) return "";
+
+  const parsed = new Date(rawDate);
+  if (Number.isNaN(parsed.getTime())) return "";
+
+  return parsed.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function logContext(log) {
+  return (
+    log?.readingType ||
+    log?.meal ||
+    log?.activityLevel ||
+    log?.dietTag ||
+    "Saved reading"
+  );
+}
+
+function formatGlucose(logOrValue) {
+  const value =
+    typeof logOrValue === "object" ? logGlucose(logOrValue) : Number(logOrValue);
+
+  return Number.isFinite(value) ? `${value} mg/dL` : "No glucose value";
+}
+
 function NCDDashboard({ user, setTab }) {
   const logs = get(userKey(KEY.logs, user), []);
   const meds = get(userKey(KEY.meds, user), []);
   const rems = get(userKey(KEY.reminders, user), []);
   const chats = get(KEY.chat, []);
 
-  const glucoseValues = logs.map((log) => Number(log.glucose)).filter(Boolean);
+  const glucoseValues = logs
+    .map(logGlucose)
+    .filter((value) => value !== null);
 
   const totalLogs = logs.length;
   const totalMeds = meds.length;
@@ -168,7 +226,7 @@ function NCDDashboard({ user, setTab }) {
 
             <div>
               <small>Latest</small>
-              <b>{latestLog ? `${latestLog.glucose} mg/dL` : "No data"}</b>
+              <b>{latestLog ? formatGlucose(latestLog) : "No data"}</b>
             </div>
           </div>
 
@@ -195,8 +253,8 @@ function NCDDashboard({ user, setTab }) {
           {logs.slice(0, 5).map((log) => (
             <div className="dashboardLogRow" key={log.id}>
               <div>
-                <b>{log.glucose} mg/dL</b>
-                <small>{log.date} {log.time} • {log.meal}</small>
+                <b>{formatGlucose(log)}</b>
+                <small>{logDate(log)} {logTime(log)} - {logContext(log)}</small>
               </div>
 
               <span>{getPrediction(log)?.riskLevel || "No prediction"}</span>
@@ -247,11 +305,17 @@ function NCDDashboard({ user, setTab }) {
 function Metric({icon,title,value,sub}){return <div className="metric"><div className="round">{icon}</div><p>{title}</p><h2>{value}</h2><small>{sub}</small></div>}
 
 function LineChart({logs}) {
-  const data = logs && logs.length
-    ? logs.slice(-7).reverse().map((l, i) => ({
-        date: l.date ? l.date.slice(5) : `Log ${i + 1}`,
-        value: Number(l.glucose)
-      }))
+  const realData = (logs || [])
+    .map((log) => ({
+      date: logDate(log),
+      value: logGlucose(log),
+    }))
+    .filter((item) => item.value !== null)
+    .slice(0, 7)
+    .reverse();
+
+  const data = realData.length
+    ? realData
     : [
         { date: "May 14", value: 112 },
         { date: "May 15", value: 140 },
@@ -392,12 +456,12 @@ function Glucose({ user }) {
 
     const values = allLogs
       .slice(0, 7)
-      .map((log) => Number(log.glucose))
-      .filter(Boolean);
+      .map(logGlucose)
+      .filter((value) => value !== null);
 
     const avg7 = values.length
       ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)
-      : Number(savedLog.glucose);
+      : logGlucose(savedLog);
 
     const highSpikes = values.filter((value) => value >= 180).length;
     const lowEvents = values.filter((value) => value < 70).length;
@@ -405,8 +469,8 @@ function Glucose({ user }) {
     const fastingValues = allLogs
       .filter((log) => log.readingType === "Fasting")
       .slice(0, 7)
-      .map((log) => Number(log.glucose))
-      .filter(Boolean);
+      .map(logGlucose)
+      .filter((value) => value !== null);
 
     const fastingAverage = fastingValues.length
       ? Math.round(fastingValues.reduce((sum, value) => sum + value, 0) / fastingValues.length)
@@ -423,7 +487,7 @@ function Glucose({ user }) {
 
   function showRiskNotification(savedLog) {
     const risk = getPrediction(savedLog)?.riskLevel;
-    const glucose = Number(savedLog.glucose);
+    const glucose = logGlucose(savedLog);
 
     if (risk === "High Risk" || glucose >= 200) {
       alert(
@@ -641,10 +705,10 @@ function Glucose({ user }) {
           {logs.map((log) => (
             <div className="glucoseLogCard" key={log.id}>
               <div>
-                <h3>{log.glucose} mg/dL</h3>
-                <p>{log.date} {log.time} • {log.readingType || log.meal}</p>
-                <small>BMI: {log.bmi || "N/A"} • Activity: {log.activityLevel || "N/A"} • Diet: {log.dietTag || "N/A"}</small>
-                {log.engineered && <small>7-day Avg: {log.engineered.sevenDayAverage} mg/dL • Spikes: {log.engineered.highSpikes}</small>}
+                <h3>{formatGlucose(log)}</h3>
+                <p>{logDate(log)} {logTime(log)} - {logContext(log)}</p>
+                <small>BMI: {log.bmi || "N/A"} - Activity: {log.activityLevel || "N/A"} - Diet: {log.dietTag || "N/A"}</small>
+                {log.engineered && <small>7-day Avg: {formatGlucose(log.engineered.sevenDayAverage)} - Spikes: {log.engineered.highSpikes}</small>}
               </div>
 
               <span className="riskPill">{getPrediction(log)?.riskLevel || "No prediction"}</span>
@@ -1031,7 +1095,10 @@ function riskLevel(logs){
     };
   }
 
-  const avg = logs.reduce((a,b)=>a+Number(b.glucose),0)/logs.length;
+  const values = logs.map(logGlucose).filter((value) => value !== null);
+  if (!values.length) return {level:'Not enough data', msg:'Add logs'};
+
+  const avg = values.reduce((a,b)=>a+b,0)/values.length;
 
   if(avg>=180) return {level:'High', msg:'Seek care'};
   if(avg>=140) return {level:'Medium', msg:'Monitor closely'};
@@ -1059,7 +1126,7 @@ function Warning({ compact, user }) {
       {!compact && (
         <div className="riskBox">
           <h3>Latest ML Status</h3>
-          <p><b>Latest glucose:</b> {latestLog ? `${latestLog.glucose} mg/dL` : "No log yet"}</p>
+          <p><b>Latest glucose:</b> {latestLog ? formatGlucose(latestLog) : "No log yet"}</p>
           <p><b>Risk level:</b> {riskLevelText}</p>
           <p>{recommendation}</p>
         </div>
@@ -1163,7 +1230,9 @@ function Education() {
 // New features added
 function WeeklyReport({ user }) {
   const logs = get(userKey(KEY.logs, user), []);
-  const values = logs.map((l) => Number(l.glucose)).filter(Boolean);
+  const values = logs
+    .map(logGlucose)
+    .filter((value) => value !== null);
 
   const average = values.length
     ? Math.round(values.reduce((a, b) => a + b, 0) / values.length)
@@ -1219,8 +1288,8 @@ function WeeklyReport({ user }) {
         {logs.slice(0, 7).map((log) => (
           <div className="dashboardLogRow" key={log.id}>
             <div>
-              <b>{log.glucose} mg/dL</b>
-              <small>{log.date} {log.time} • {log.meal}</small>
+              <b>{formatGlucose(log)}</b>
+              <small>{logDate(log)} {logTime(log)} - {logContext(log)}</small>
             </div>
             <span>{getPrediction(log)?.riskLevel || "No prediction"}</span>
           </div>
