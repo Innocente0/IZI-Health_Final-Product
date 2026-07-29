@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Activity, AlertTriangle, BarChart3, Bell, BookOpen, Calendar, ChevronRight, Clock, Droplet, HeartPulse, Home as HomeIcon, MessageCircle, Pill, Plus, Settings, Shield, Trash2, X } from "lucide-react";
 import SafetyNotice from "../components/SafetyNotice.jsx";
 import { API_URL, KEY, authHeaders, getStored, setStored } from "../config.js";
@@ -102,6 +102,16 @@ function logDate(log) {
   });
 }
 
+function logTimestamp(log) {
+  const rawDate = log?.createdAt || log?.created_at || log?.date;
+  if (!rawDate) return 0;
+
+  const parsed = new Date(rawDate);
+  if (!Number.isNaN(parsed.getTime())) return parsed.getTime();
+
+  return 0;
+}
+
 function logTime(log) {
   if (log?.time) return log.time;
 
@@ -134,11 +144,53 @@ function formatGlucose(logOrValue) {
   return Number.isFinite(value) ? `${value} mg/dL` : "No glucose value";
 }
 
+function sortedLogs(logs) {
+  return [...logs].sort((a, b) => logTimestamp(b) - logTimestamp(a));
+}
+
+function mergeLogs(localLogs, backendLogs) {
+  const byKey = new Map();
+
+  [...backendLogs, ...localLogs].forEach((log, index) => {
+    const key =
+      log.id !== undefined && log.id !== null
+        ? `id:${log.id}`
+        : `fallback:${logTimestamp(log)}:${logGlucose(log)}:${index}`;
+
+    byKey.set(key, log);
+  });
+
+  return sortedLogs([...byKey.values()]);
+}
+
+async function fetchHealthLogs(user, setLogs) {
+  try {
+    const response = await fetch(`${API_URL}/api/health-logs`, {
+      headers: authHeaders(),
+    });
+
+    if (!response.ok) return;
+
+    const backendLogs = await response.json();
+    const localLogs = get(userKey(KEY.logs, user), []);
+    const mergedLogs = mergeLogs(localLogs, Array.isArray(backendLogs) ? backendLogs : []);
+
+    setLogs(mergedLogs);
+    set(userKey(KEY.logs, user), mergedLogs);
+  } catch (error) {
+    console.error("Could not load health logs:", error);
+  }
+}
+
 function NCDDashboard({ user, setTab }) {
-  const logs = get(userKey(KEY.logs, user), []);
+  const [logs, setLogs] = useState(() => sortedLogs(get(userKey(KEY.logs, user), [])));
   const meds = get(userKey(KEY.meds, user), []);
   const rems = get(userKey(KEY.reminders, user), []);
   const chats = get(KEY.chat, []);
+
+  useEffect(() => {
+    fetchHealthLogs(user, setLogs);
+  }, [user]);
 
   const glucoseValues = logs
     .map(logGlucose)
@@ -308,23 +360,27 @@ function LineChart({logs}) {
   const realData = (logs || [])
     .map((log) => ({
       date: logDate(log),
+      timestamp: logTimestamp(log),
       value: logGlucose(log),
     }))
     .filter((item) => item.value !== null)
+    .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, 7)
     .reverse();
 
-  const data = realData.length
-    ? realData
-    : [
-        { date: "May 14", value: 112 },
-        { date: "May 15", value: 140 },
-        { date: "May 16", value: 90 },
-        { date: "May 17", value: 134 },
-        { date: "May 18", value: 98 },
-        { date: "May 19", value: 125 },
-        { date: "May 20", value: 130 },
-      ];
+  const data = realData;
+
+  if (!data.length) {
+    return (
+      <div className="glucoseChartBox">
+        <div className="chartEmptyState">
+          <Droplet />
+          <p>No glucose readings yet.</p>
+          <small>Add a glucose log to see your trend chart here.</small>
+        </div>
+      </div>
+    );
+  }
 
   const highest = Math.max(...data.map(d => d.value));
   const lowest = Math.min(...data.map(d => d.value));
@@ -387,8 +443,12 @@ function LineChart({logs}) {
 }
 
 function Glucose({ user }) {
-  const [logs, setLogs] = useState(get(userKey(KEY.logs, user), []));
+  const [logs, setLogs] = useState(() => sortedLogs(get(userKey(KEY.logs, user), [])));
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchHealthLogs(user, setLogs);
+  }, [user]);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().slice(0, 10),
@@ -541,7 +601,7 @@ function Glucose({ user }) {
         engineered,
       };
 
-      const updatedLogs = [savedLog, ...logs];
+      const updatedLogs = sortedLogs([savedLog, ...logs]);
 
       setLogs(updatedLogs);
       set(userKey(KEY.logs, user), updatedLogs);

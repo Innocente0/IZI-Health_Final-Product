@@ -1067,6 +1067,33 @@ button:disabled,
   margin-top: 18px;
 }
 
+.chartEmptyState {
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: #fbfaff;
+  color: var(--muted);
+  text-align: center;
+}
+
+.chartEmptyState svg {
+  color: var(--p);
+}
+
+.chartEmptyState p {
+  margin: 0;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.chartEmptyState small {
+  max-width: 260px;
+}
+
 .chartArea {
   height: 260px;
   display: flex;
